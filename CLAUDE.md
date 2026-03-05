@@ -26,7 +26,9 @@ All 9 modules done. 5 scrapers (YouthOp, OFY, OpDesk, AfterSchool, ScholAds) fee
 | 2.5 Search (debounced, URL-driven) | DONE |
 | 2.6 Auth (magic link OTP) | DONE |
 | 2.7 Save / bookmarks | DONE |
-| 2.8 SEO + metadata | TODO |
+| 2.8 User Dashboard (/dashboard: saved list + profile settings, auth-gated) | TODO |
+| 2.9 SEO Programmatic Pages (/scholarships, /fellowships/africa, sitemap.xml) | TODO |
+| 2.10 Mobile Responsive Pass (polish all pages at 375px) | TODO |
 
 ## Tech Stack
 
