@@ -1,10 +1,29 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata, Viewport } from 'next';
+import { Inter, Outfit } from 'next/font/google';
+
+import './globals.css';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-body',
+  display: 'swap',
+});
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  variable: '--font-display',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
-  title: "YouthAtlas — Opportunities for Young People",
+  title: 'YouthAtlas — Opportunities for Young People',
   description:
-    "Find scholarships, fellowships, internships, grants, and more. Updated daily with AI-powered matching.",
+    'Find scholarships, fellowships, internships, grants, and more. Updated daily with AI-powered matching.',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -13,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
       <body>{children}</body>
     </html>
   );

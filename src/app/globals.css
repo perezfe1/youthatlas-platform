@@ -1,3 +1,42 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 100% 99%;       /* #FFFBF5 warm off-white */
+    --surface: 0 0% 100%;            /* #FFFFFF */
+    --text-primary: 235 55% 13%;     /* #1A1A2E */
+    --text-secondary: 220 9% 46%;    /* #6B7280 */
+    --border: 214 32% 91%;           /* #E2E8F0 */
+    --primary: 217 91% 60%;          /* #3B82F6 */
+    --primary-dark: 224 76% 48%;     /* #1E40AF */
+    --accent-warm: 25 95% 53%;       /* #F97316 */
+    --accent-purple: 258 90% 66%;    /* #8B5CF6 */
+  }
+
+  .dark {
+    --background: 222 47% 11%;       /* #0F172A deep navy */
+    --surface: 217 33% 17%;          /* #1E293B */
+    --text-primary: 210 40% 98%;     /* #F8FAFC */
+    --text-secondary: 215 20% 65%;   /* #94A3B8 */
+    --border: 217 33% 25%;           /* #334155 */
+    --primary: 217 91% 60%;          /* stays the same */
+    --primary-dark: 213 94% 68%;     /* #60A5FA lighter for dark bg */
+    --accent-warm: 25 95% 53%;
+    --accent-purple: 258 90% 66%;
+  }
+
+  body {
+    font-family: var(--font-body), sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: hsl(var(--background));
+    color: hsl(var(--text-primary));
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display), sans-serif;
+    font-weight: 600;
+  }
+}
