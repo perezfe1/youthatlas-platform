@@ -8,11 +8,36 @@ User-facing Next.js app for browsing youth opportunities (scholarships, fellowsh
 2. **youthatlas-scrapers** — automated ingestion pipeline (separate repo)
 3. **Distribution** — Telegram bot + email (lives in scrapers repo)
 
+## Project Status
+
+### Phase 0 — Database & Infrastructure (COMPLETE)
+All 5 modules done: Supabase schema, 10 migrations (tables, indexes, full-text search, RLS, triggers), shared types, env validation.
+
+### Phase 1 — Scraper Pipeline (COMPLETE)
+All 9 modules done. 5 scrapers (YouthOp, OFY, OpDesk, AfterSchool, ScholAds) feeding 290+ opportunities into Supabase. Daily automated pipeline via GitHub Actions with Telegram health monitoring.
+
+### Phase 2 — Web Platform (IN PROGRESS)
+| Module | Status |
+|--------|--------|
+| 2.1 Service layer + design system | DONE |
+| 2.2 Homepage + browse/list page | DONE |
+| 2.3 Search & filters | DONE |
+| 2.4 Opportunity detail page | DONE |
+| 2.5 Saved / bookmarks | TODO |
+| 2.6 SEO + metadata | TODO |
+
 ## Tech Stack
 
 - Next.js 14 (App Router) / TypeScript (strict) / Tailwind CSS
 - Supabase (Postgres + Auth + Edge Functions)
 - Deployed on Vercel
+
+## Design System
+
+- **Fonts:** Outfit (display/headings, `font-display`) + Inter (body, `font-body`) — loaded via `next/font/google`
+- **Background:** Warm off-white `#FFFBF5` (HSL 40 100% 99%)
+- **Color tokens:** Semantic CSS custom properties consumed as `hsl(var(--token))` in `tailwind.config.ts` — `background`, `surface`, `text-primary`, `text-secondary`, `border`, `primary`, `primary-dark`, `accent-warm`, `accent-purple`
+- **Dark mode:** `darkMode: 'class'` ready, tokens defined in `globals.css` under `.dark`
 
 ## Architecture Rules — FOLLOW THESE ALWAYS
 
@@ -23,11 +48,26 @@ User-facing Next.js app for browsing youth opportunities (scholarships, fellowsh
 5. **Env vars are validated via Zod** in `src/config/env.ts`. Never use raw `process.env`.
 6. **One concern per file.** If a file does 2+ things, split it.
 
+## Gotchas — READ BEFORE CODING
+
+- **`force-dynamic` on all pages.** Every `page.tsx` must export `export const dynamic = 'force-dynamic'` — Supabase queries use cookies/headers which break static generation.
+- **Claude model string:** The scrapers use `claude-haiku-4-5-20251001` (the old `claude-3-5-haiku` was retired). Always use this exact model ID.
+- **Telegram env var:** The correct env var is `TELEGRAM_CHANNEL_ID`, NOT `TELEGRAM_CHAT_ID`. Using the wrong name silently fails.
+
 ## No-Touch Files (never modify without explicit instruction)
 
 - `src/lib/supabase/middleware.ts`
 - `src/config/env.ts`
 - `src/types/database.generated.ts` (when it exists)
+
+## Key Files
+
+- `src/types/opportunity.ts` — `Opportunity` interface + all enum types (source of truth, shared with scrapers repo)
+- `src/services/opportunity-service.ts` — all Supabase queries
+- `src/services/search-service.ts` — search/filter logic
+- `src/config/constants.ts` — pagination, site-wide constants
+- `src/app/globals.css` — CSS custom property definitions (light + dark tokens)
+- `tailwind.config.ts` — semantic color + font family extensions
 
 ## Import Order Convention
 
@@ -40,8 +80,8 @@ User-facing Next.js app for browsing youth opportunities (scholarships, fellowsh
 
 ## File Naming
 
-- Components: PascalCase (`OpportunityCard.tsx`)
-- Everything else: camelCase (`opportunityService.ts`)
+- Components: kebab-case (`opportunity-card.tsx`)
+- Services/config/types: kebab-case (`opportunity-service.ts`)
 
 ## Key Types
 

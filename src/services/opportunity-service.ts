@@ -35,8 +35,10 @@ export async function getOpportunities(
       .select('*', { count: 'exact' })
       .eq('status', 'active');
 
-    if (filters?.type) q = q.eq('type', filters.type);
-    if (filters?.region) q = q.contains('regions', [filters.region]);
+    if (filters?.types?.length) q = q.in('type', filters.types);
+    else if (filters?.type) q = q.eq('type', filters.type);
+    if (filters?.regions?.length) q = q.overlaps('regions', filters.regions);
+    else if (filters?.region) q = q.contains('regions', [filters.region]);
     if (filters?.field) q = q.contains('fields', [filters.field]);
     if (filters?.education_level) q = q.contains('target_audience', [filters.education_level]);
     if (filters?.is_fully_funded) q = q.eq('is_fully_funded', true);
@@ -73,8 +75,10 @@ async function getOpportunitiesIlikeFallback(filters: OpportunityFilters): Promi
       .eq('status', 'active')
       .ilike('title', `%${filters.search_query ?? ''}%`);
 
-    if (filters.type) q = q.eq('type', filters.type);
-    if (filters.region) q = q.contains('regions', [filters.region]);
+    if (filters.types?.length) q = q.in('type', filters.types);
+    else if (filters.type) q = q.eq('type', filters.type);
+    if (filters.regions?.length) q = q.overlaps('regions', filters.regions);
+    else if (filters.region) q = q.contains('regions', [filters.region]);
     if (filters.field) q = q.contains('fields', [filters.field]);
     if (filters.education_level) q = q.contains('target_audience', [filters.education_level]);
     if (filters.is_fully_funded) q = q.eq('is_fully_funded', true);

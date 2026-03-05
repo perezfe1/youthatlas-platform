@@ -1,37 +1,62 @@
 import Link from 'next/link';
 
 import { OpportunityCard } from '@/components/features/opportunity-card';
-import { getOpportunities } from '@/services/opportunity-service';
-import { OPPORTUNITY_TYPES, type OpportunityType, type OpportunityFilters } from '@/types/opportunity';
+import { FilterSidebar } from '@/components/features/filter-sidebar';
+import { ActiveFilters } from '@/components/features/active-filters';
+import { MobileFilterToggle } from '@/components/features/mobile-filter-toggle';
+import { getOpportunities, getOpportunityTypes } from '@/services/opportunity-service';
+import {
+  OPPORTUNITY_TYPES,
+  REGIONS,
+  type OpportunityType,
+  type Region,
+  type OpportunityFilters,
+} from '@/types/opportunity';
 import { PAGINATION } from '@/config/constants';
+import { buildPageUrl, countActiveFilters } from '@/lib/filter-urls';
 
 export const dynamic = 'force-dynamic';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function parseSearchParams(sp: Record<string, string | string[] | undefined>): OpportunityFilters {
-  const type = typeof sp.type === 'string' && OPPORTUNITY_TYPES.includes(sp.type as OpportunityType)
-    ? (sp.type as OpportunityType)
-    : undefined;
-  const search = typeof sp.search === 'string' ? sp.search : undefined;
-  const page = typeof sp.page === 'string' ? Math.max(1, parseInt(sp.page, 10) || 1) : 1;
+function parseSearchParams(
+  sp: Record<string, string | string[] | undefined>,
+): OpportunityFilters {
+  const typeRaw = typeof sp.type === 'string' ? sp.type : '';
+  const types = typeRaw
+    .split(',')
+    .map((s) => s.trim())
+    .filter((t): t is OpportunityType =>
+      OPPORTUNITY_TYPES.includes(t as OpportunityType),
+    );
 
-  return { type, search_query: search, page };
+  const regionRaw = typeof sp.region === 'string' ? sp.region : '';
+  const regions = regionRaw
+    .split(',')
+    .map((s) => s.trim())
+    .filter((r): r is Region => REGIONS.includes(r as Region));
+
+  const is_fully_funded = sp.funded === 'true' ? true : undefined;
+  const search_query =
+    typeof sp.search === 'string' && sp.search ? sp.search : undefined;
+  const page =
+    typeof sp.page === 'string' ? Math.max(1, parseInt(sp.page, 10) || 1) : 1;
+
+  return {
+    types: types.length > 0 ? types : undefined,
+    regions: regions.length > 0 ? regions : undefined,
+    is_fully_funded,
+    search_query,
+    page,
+  };
 }
 
 function buildPageTitle(filters: OpportunityFilters): string {
-  if (filters.type) {
-    return filters.type.charAt(0).toUpperCase() + filters.type.slice(1) + 's';
+  if (filters.types?.length === 1) {
+    const t = filters.types[0]!;
+    return t.charAt(0).toUpperCase() + t.slice(1) + 's';
   }
   return 'Browse Opportunities';
-}
-
-function buildPageUrl(base: OpportunityFilters, page: number): string {
-  const params = new URLSearchParams();
-  if (base.type) params.set('type', base.type);
-  if (base.search_query) params.set('search', base.search_query);
-  params.set('page', String(page));
-  return `/opportunities?${params.toString()}`;
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -41,13 +66,22 @@ function PageHeader({ title, count }: { title: string; count: number }) {
     <div>
       <h1 className="font-display text-3xl font-bold text-[#1A1A2E]">{title}</h1>
       <p className="mt-1 text-sm text-text-secondary">
-        Showing {count.toLocaleString()} {count === 1 ? 'opportunity' : 'opportunities'}
+        Showing {count.toLocaleString()}{' '}
+        {count === 1 ? 'opportunity' : 'opportunities'}
       </p>
     </div>
   );
 }
 
-function Pagination({ page, totalCount, filters }: { page: number; totalCount: number; filters: OpportunityFilters }) {
+function Pagination({
+  page,
+  totalCount,
+  filters,
+}: {
+  page: number;
+  totalCount: number;
+  filters: OpportunityFilters;
+}) {
   const totalPages = Math.ceil(totalCount / PAGINATION.DEFAULT_PAGE_SIZE);
   const hasPrev = page > 1;
   const hasNext = page < totalPages;
@@ -95,35 +129,67 @@ type PageProps = {
 
 export default async function OpportunitiesPage({ searchParams }: PageProps) {
   const filters = parseSearchParams(searchParams);
-  const result = await getOpportunities(filters);
+
+  const [result, typesResult] = await Promise.all([
+    getOpportunities(filters),
+    getOpportunityTypes(),
+  ]);
 
   const opportunities = result.data?.opportunities ?? [];
   const totalCount = result.data?.count ?? 0;
   const title = buildPageTitle(filters);
   const page = filters.page ?? 1;
 
+  const typeCounts: Record<string, number> = {};
+  for (const { type, count } of typesResult.data ?? []) {
+    typeCounts[type] = count;
+  }
+
+  const activeFilterCount = countActiveFilters(filters);
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <PageHeader title={title} count={totalCount} />
+      {/* Mobile: filter toggle button (client) wrapping server-rendered sidebar */}
+      <div className="mb-6 lg:hidden">
+        <MobileFilterToggle activeFilterCount={activeFilterCount}>
+          <FilterSidebar currentFilters={filters} typeCounts={typeCounts} />
+        </MobileFilterToggle>
+      </div>
 
-      {opportunities.length > 0 ? (
-        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {opportunities.map((opp) => (
-            <OpportunityCard key={opp.id} opportunity={opp} />
-          ))}
-        </div>
-      ) : (
-        <div className="mt-16 text-center">
-          <p className="text-lg text-text-secondary">No opportunities found.</p>
-          <Link href="/opportunities" className="mt-4 inline-block text-sm text-primary hover:text-primary-dark">
-            Clear filters →
-          </Link>
-        </div>
-      )}
+      <div className="lg:flex lg:gap-8">
+        {/* Desktop sidebar */}
+        <aside className="hidden w-64 shrink-0 lg:block">
+          <FilterSidebar currentFilters={filters} typeCounts={typeCounts} />
+        </aside>
 
-      {totalCount > PAGINATION.DEFAULT_PAGE_SIZE && (
-        <Pagination page={page} totalCount={totalCount} filters={filters} />
-      )}
+        {/* Main content */}
+        <div className="min-w-0 flex-1">
+          <PageHeader title={title} count={totalCount} />
+          <ActiveFilters currentFilters={filters} />
+
+          {opportunities.length > 0 ? (
+            <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              {opportunities.map((opp) => (
+                <OpportunityCard key={opp.id} opportunity={opp} />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-16 text-center">
+              <p className="text-lg text-text-secondary">No opportunities found.</p>
+              <Link
+                href="/opportunities"
+                className="mt-4 inline-block text-sm text-primary hover:text-primary-dark"
+              >
+                Clear filters →
+              </Link>
+            </div>
+          )}
+
+          {totalCount > PAGINATION.DEFAULT_PAGE_SIZE && (
+            <Pagination page={page} totalCount={totalCount} filters={filters} />
+          )}
+        </div>
+      </div>
     </div>
   );
 }

@@ -94,8 +94,10 @@ export type Result<T> =
 
 // --- Filter types for the browse/search page ---
 export interface OpportunityFilters {
-  type?: OpportunityType;
-  region?: Region;
+  type?: OpportunityType;        // single value — kept for backward compat
+  types?: OpportunityType[];     // multi-select (browse page filters)
+  region?: Region;               // single value — kept for backward compat
+  regions?: Region[];            // multi-select (browse page filters)
   field?: string;
   education_level?: EducationLevel;
   is_fully_funded?: boolean;
