@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 
 import { navLinks } from '@/config/site';
+import { AuthButton } from '@/components/features/auth-button';
 
 // ── Icons (inline SVG, no deps) ──────────────────────────────────────────────
 
@@ -48,6 +49,7 @@ function DesktopNav() {
           {link.label}
         </Link>
       ))}
+      <AuthButton />
     </nav>
   );
 }
@@ -69,6 +71,9 @@ function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
           {link.label}
         </Link>
       ))}
+      <div className="px-4 py-2">
+        <AuthButton />
+      </div>
     </nav>
   );
 }
