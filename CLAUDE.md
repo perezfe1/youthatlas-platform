@@ -21,10 +21,12 @@ All 9 modules done. 5 scrapers (YouthOp, OFY, OpDesk, AfterSchool, ScholAds) fee
 |--------|--------|
 | 2.1 Service layer + design system | DONE |
 | 2.2 Homepage + browse/list page | DONE |
-| 2.3 Search & filters | DONE |
+| 2.3 Filters (type, region, funding) | DONE |
 | 2.4 Opportunity detail page | DONE |
-| 2.5 Saved / bookmarks | TODO |
-| 2.6 SEO + metadata | TODO |
+| 2.5 Search (debounced, URL-driven) | DONE |
+| 2.6 Auth (magic link OTP) | DONE |
+| 2.7 Save / bookmarks | DONE |
+| 2.8 SEO + metadata | TODO |
 
 ## Tech Stack
 
