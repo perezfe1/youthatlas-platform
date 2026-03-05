@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Outfit } from 'next/font/google';
 
+import { Header } from '@/components/layouts/header';
+import { Footer } from '@/components/layouts/footer';
+
 import './globals.css';
 
 const inter = Inter({
@@ -33,7 +36,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
-      <body>{children}</body>
+      <body className="font-body min-h-screen flex flex-col bg-background text-text-primary">
+        <Header />
+        <main className="flex-1">{children}</main>
+        <Footer />
+      </body>
     </html>
   );
 }
