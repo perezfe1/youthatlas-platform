@@ -4,6 +4,8 @@ import { OpportunityCard } from '@/components/features/opportunity-card';
 import { FilterSidebar } from '@/components/features/filter-sidebar';
 import { ActiveFilters } from '@/components/features/active-filters';
 import { MobileFilterToggle } from '@/components/features/mobile-filter-toggle';
+import { SearchInput } from '@/components/features/search-input';
+import { SearchResultsHeader } from '@/components/features/search-results-header';
 import { getOpportunities, getOpportunityTypes } from '@/services/opportunity-service';
 import {
   OPPORTUNITY_TYPES,
@@ -165,6 +167,15 @@ export default async function OpportunitiesPage({ searchParams }: PageProps) {
         {/* Main content */}
         <div className="min-w-0 flex-1">
           <PageHeader title={title} count={totalCount} />
+          <div className="mt-4">
+            <SearchInput
+              defaultValue={filters.search_query ?? ''}
+              placeholder="Search opportunities..."
+            />
+            {filters.search_query && (
+              <SearchResultsHeader query={filters.search_query} totalCount={totalCount} />
+            )}
+          </div>
           <ActiveFilters currentFilters={filters} />
 
           {opportunities.length > 0 ? (
