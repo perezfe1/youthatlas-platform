@@ -55,6 +55,12 @@ export function AuthButton() {
   return (
     <span className="flex items-center gap-3 text-sm text-slate-600">
       <span className="hidden sm:inline">{displayEmail}</span>
+      <Link
+        href="/dashboard"
+        className="font-medium transition-colors hover:text-primary"
+      >
+        Dashboard
+      </Link>
       <button
         type="button"
         onClick={handleSignOut}
