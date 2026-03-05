@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { DeadlineBadge } from '@/components/ui/deadline-badge';
 import { OpportunityBadge } from '@/components/ui/badge';
 import { CopyButton } from '@/components/ui/copy-button';
+import { SaveButton } from '@/components/features/save-button';
 import { getOpportunityBySlug } from '@/services/opportunity-service';
 import { formatDate } from '@/lib/utils';
 import type { Opportunity, OpportunityType } from '@/types/opportunity';
@@ -238,6 +239,10 @@ function ApplyCard({ opp }: ApplyCardProps) {
   return (
     <div className="sticky top-24 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
       <ApplyButton opp={opp} fullWidth />
+      <div className="mt-3 flex items-center justify-center">
+        <SaveButton opportunityId={opp.id} size="md" />
+        <span className="ml-2 text-sm text-slate-500">Save for later</span>
+      </div>
       <KeyDetailsList opp={opp} />
       <div className="mt-6 border-t border-slate-100 pt-4">
         <p className="mb-2 text-xs font-medium uppercase tracking-wide text-text-secondary">

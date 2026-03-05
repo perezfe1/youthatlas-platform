@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { OpportunityBadge } from '@/components/ui/badge';
 import { DeadlineBadge } from '@/components/ui/deadline-badge';
+import { SaveButton } from '@/components/features/save-button';
 import type { Opportunity } from '@/types/opportunity';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -55,31 +56,37 @@ type OpportunityCardProps = {
 };
 
 export function OpportunityCard({ opportunity }: OpportunityCardProps) {
-  const { slug, title, type, deadline, organization, summary, regions, is_fully_funded } = opportunity;
+  const { id, slug, title, type, deadline, organization, summary, regions, is_fully_funded } =
+    opportunity;
 
   return (
-    <Link
-      href={`/opportunities/${slug}`}
-      className="flex min-h-[220px] flex-col rounded-lg border border-slate-200 bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-    >
-      <div className="flex items-start justify-between gap-2">
-        <OpportunityBadge label={type} variant={type} />
-        <DeadlineBadge deadline={deadline} />
+    <div className="relative">
+      <div className="absolute right-2 top-2 z-10">
+        <SaveButton opportunityId={id} size="sm" />
       </div>
+      <Link
+        href={`/opportunities/${slug}`}
+        className="flex min-h-[220px] flex-col rounded-lg border border-slate-200 bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+      >
+        <div className="flex items-start justify-between gap-2">
+          <OpportunityBadge label={type} variant={type} />
+          <DeadlineBadge deadline={deadline} />
+        </div>
 
-      <h3 className="mt-3 line-clamp-2 font-display text-lg font-semibold text-[#1A1A2E]">
-        {title}
-      </h3>
+        <h3 className="mt-3 line-clamp-2 font-display text-lg font-semibold text-[#1A1A2E]">
+          {title}
+        </h3>
 
-      {organization && (
-        <p className="mt-1 text-sm text-text-secondary">{organization}</p>
-      )}
+        {organization && (
+          <p className="mt-1 text-sm text-text-secondary">{organization}</p>
+        )}
 
-      {summary && (
-        <p className="mt-2 line-clamp-2 text-sm text-text-secondary">{summary}</p>
-      )}
+        {summary && (
+          <p className="mt-2 line-clamp-2 text-sm text-text-secondary">{summary}</p>
+        )}
 
-      <CardBottom regions={regions} isFullyFunded={is_fully_funded} />
-    </Link>
+        <CardBottom regions={regions} isFullyFunded={is_fully_funded} />
+      </Link>
+    </div>
   );
 }

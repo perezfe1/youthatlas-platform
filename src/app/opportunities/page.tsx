@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { OpportunityCard } from '@/components/features/opportunity-card';
+import { SaveButtonBulk } from '@/components/features/save-button-bulk';
 import { FilterSidebar } from '@/components/features/filter-sidebar';
 import { ActiveFilters } from '@/components/features/active-filters';
 import { MobileFilterToggle } from '@/components/features/mobile-filter-toggle';
@@ -179,11 +180,13 @@ export default async function OpportunitiesPage({ searchParams }: PageProps) {
           <ActiveFilters currentFilters={filters} />
 
           {opportunities.length > 0 ? (
-            <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-              {opportunities.map((opp) => (
-                <OpportunityCard key={opp.id} opportunity={opp} />
-              ))}
-            </div>
+            <SaveButtonBulk>
+              <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                {opportunities.map((opp) => (
+                  <OpportunityCard key={opp.id} opportunity={opp} />
+                ))}
+              </div>
+            </SaveButtonBulk>
           ) : (
             <div className="mt-16 text-center">
               <p className="text-lg text-text-secondary">No opportunities found.</p>
