@@ -118,7 +118,7 @@ export default async function TypePage({ params, searchParams }: Props) {
       </nav>
 
       {/* Heading + intro */}
-      <h1 className="font-display text-3xl font-bold text-[#1A1A2E]">{seo.h1}</h1>
+      <h1 className="font-display text-2xl font-bold text-[#1A1A2E] sm:text-3xl">{seo.h1}</h1>
       <p className="mt-2 max-w-2xl text-slate-600">{intro}</p>
 
       {/* JSON-LD */}

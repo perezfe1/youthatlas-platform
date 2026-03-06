@@ -76,12 +76,12 @@ type MainContentProps = { opp: Opportunity };
 function MainContent({ opp }: MainContentProps) {
   return (
     <div>
-      <h1 className="font-display text-3xl font-bold text-[#1A1A2E] sm:text-4xl leading-tight">
+      <h1 className="font-display text-2xl font-bold text-[#1A1A2E] leading-tight sm:text-4xl">
         {opp.title}
       </h1>
 
       {opp.organization && (
-        <p className="mt-2 text-lg text-text-secondary">{opp.organization}</p>
+        <p className="mt-2 text-base text-text-secondary sm:text-lg">{opp.organization}</p>
       )}
 
       <div className="mt-4 flex flex-wrap items-center gap-2">

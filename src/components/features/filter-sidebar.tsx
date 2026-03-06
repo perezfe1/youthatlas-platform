@@ -38,7 +38,7 @@ function CheckRow({ href, label, count, checked }: CheckRowProps) {
   return (
     <Link
       href={href}
-      className={`flex items-center justify-between gap-2 rounded px-2 py-1.5 text-sm transition-colors hover:bg-slate-50 ${
+      className={`flex items-center justify-between gap-2 rounded px-2 py-2 text-sm transition-colors hover:bg-slate-50 ${
         checked ? 'font-semibold text-text-primary' : 'text-text-secondary'
       }`}
     >

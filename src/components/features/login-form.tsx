@@ -69,7 +69,7 @@ export function LoginForm({ redirectUrl }: Props) {
 
   if (step === 'otp') {
     return (
-      <div className="mx-auto mt-16 max-w-md rounded-lg border border-slate-200 bg-white p-8 shadow-sm">
+      <div className="mx-auto mt-8 max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:mt-16 sm:p-8">
         <h1 className="text-center font-display text-2xl font-bold">Check your email</h1>
         <p className="mt-2 text-center text-sm text-slate-500">
           We sent a code to{' '}

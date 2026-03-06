@@ -104,7 +104,7 @@ export function SaveButton({ opportunityId, size = 'md' }: Props) {
     }
   }
 
-  const sizeClass = size === 'sm' ? 'h-8 w-8' : 'h-10 w-10';
+  const sizeClass = size === 'sm' ? 'h-10 w-10' : 'h-10 w-10';
 
   return (
     <button

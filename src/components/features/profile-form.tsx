@@ -32,7 +32,7 @@ function CheckboxGroup({ label, hint, options, selected, onChange }: CheckboxGro
           return (
             <label
               key={option}
-              className={`flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              className={`flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-medium transition-colors ${
                 checked
                   ? 'border-blue-500 bg-blue-50 text-blue-700'
                   : 'border-slate-200 text-slate-600 hover:border-slate-300'
@@ -152,7 +152,7 @@ export function ProfileForm({ profile }: Props) {
         <button
           type="submit"
           disabled={status === 'saving'}
-          className="rounded-lg bg-blue-500 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-600 disabled:opacity-60"
+          className="rounded-lg bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-600 disabled:opacity-60"
         >
           {status === 'saving' ? 'Saving…' : 'Save Profile'}
         </button>

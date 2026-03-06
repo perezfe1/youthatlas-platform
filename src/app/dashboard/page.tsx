@@ -36,12 +36,12 @@ function DashboardPagination({ page, totalCount }: { page: number; totalCount: n
       {hasPrev ? (
         <Link
           href={`/dashboard?page=${page - 1}`}
-          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-[#1A1A2E] transition-colors hover:bg-slate-50"
+          className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-[#1A1A2E] transition-colors hover:bg-slate-50"
         >
           ← Previous
         </Link>
       ) : (
-        <span className="rounded-lg border border-slate-100 px-4 py-2 text-sm font-medium text-slate-300">
+        <span className="rounded-lg border border-slate-100 px-4 py-2.5 text-sm font-medium text-slate-300">
           ← Previous
         </span>
       )}
@@ -51,12 +51,12 @@ function DashboardPagination({ page, totalCount }: { page: number; totalCount: n
       {hasNext ? (
         <Link
           href={`/dashboard?page=${page + 1}`}
-          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-[#1A1A2E] transition-colors hover:bg-slate-50"
+          className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-[#1A1A2E] transition-colors hover:bg-slate-50"
         >
           Next →
         </Link>
       ) : (
-        <span className="rounded-lg border border-slate-100 px-4 py-2 text-sm font-medium text-slate-300">
+        <span className="rounded-lg border border-slate-100 px-4 py-2.5 text-sm font-medium text-slate-300">
           Next →
         </span>
       )}
@@ -102,7 +102,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-      <h1 className="font-display text-3xl font-bold text-[#1A1A2E]">Dashboard</h1>
+      <h1 className="font-display text-2xl font-bold text-[#1A1A2E] sm:text-3xl">Dashboard</h1>
 
       {/* ── Saved Opportunities ──────────────────────────────────────────── */}
       <section className="mt-10">

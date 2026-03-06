@@ -67,7 +67,7 @@ function buildPageTitle(filters: OpportunityFilters): string {
 function PageHeader({ title, count }: { title: string; count: number }) {
   return (
     <div>
-      <h1 className="font-display text-3xl font-bold text-[#1A1A2E]">{title}</h1>
+      <h1 className="font-display text-2xl font-bold text-[#1A1A2E] sm:text-3xl">{title}</h1>
       <p className="mt-1 text-sm text-text-secondary">
         Showing {count.toLocaleString()}{' '}
         {count === 1 ? 'opportunity' : 'opportunities'}
@@ -94,12 +94,12 @@ function Pagination({
       {hasPrev ? (
         <Link
           href={buildPageUrl(filters, page - 1)}
-          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-[#1A1A2E] transition-colors hover:bg-slate-50"
+          className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-[#1A1A2E] transition-colors hover:bg-slate-50"
         >
           ← Previous
         </Link>
       ) : (
-        <span className="rounded-lg border border-slate-100 px-4 py-2 text-sm font-medium text-slate-300">
+        <span className="rounded-lg border border-slate-100 px-4 py-2.5 text-sm font-medium text-slate-300">
           ← Previous
         </span>
       )}
@@ -111,12 +111,12 @@ function Pagination({
       {hasNext ? (
         <Link
           href={buildPageUrl(filters, page + 1)}
-          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-[#1A1A2E] transition-colors hover:bg-slate-50"
+          className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-[#1A1A2E] transition-colors hover:bg-slate-50"
         >
           Next →
         </Link>
       ) : (
-        <span className="rounded-lg border border-slate-100 px-4 py-2 text-sm font-medium text-slate-300">
+        <span className="rounded-lg border border-slate-100 px-4 py-2.5 text-sm font-medium text-slate-300">
           Next →
         </span>
       )}

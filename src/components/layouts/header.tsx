@@ -66,7 +66,7 @@ function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
           key={link.href}
           href={link.href}
           onClick={onClose}
-          className="block px-4 py-2 text-sm text-text-secondary transition-colors hover:text-primary"
+          className="block px-4 py-3 text-sm text-text-secondary transition-colors hover:text-primary"
         >
           {link.label}
         </Link>
@@ -90,7 +90,7 @@ export function Header() {
         <DesktopNav />
         <button
           type="button"
-          className="md:hidden"
+          className="md:hidden -mr-2 p-2"
           onClick={() => setMenuOpen((prev) => !prev)}
           aria-label="Toggle menu"
         >

@@ -25,12 +25,12 @@ function SearchIcon() {
 
 function HeroSection({ totalCount }: { totalCount: number }) {
   return (
-    <section className="bg-gradient-to-br from-blue-50 via-white to-violet-50 py-20 sm:py-28">
+    <section className="bg-gradient-to-br from-blue-50 via-white to-violet-50 py-12 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-        <h1 className="font-display text-4xl font-bold text-[#1A1A2E] sm:text-5xl lg:text-6xl">
+        <h1 className="font-display text-3xl font-bold text-[#1A1A2E] sm:text-5xl lg:text-6xl">
           Discover opportunities that<br className="hidden sm:inline" /> change your life
         </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-lg text-text-secondary sm:text-xl">
+        <p className="mx-auto mt-4 max-w-2xl text-base text-text-secondary sm:text-xl">
           Scholarships, fellowships, grants, internships and more — aggregated from 50+ sources worldwide.
         </p>
         <p className="mt-6 text-sm text-text-secondary">
@@ -80,7 +80,7 @@ function TypeTile({ type, count }: { type: string; count: number }) {
 
 function TypeGridSection({ types }: { types: { type: string; count: number }[] }) {
   return (
-    <section className="py-16">
+    <section className="py-10 sm:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <h2 className="text-center font-display text-2xl font-semibold text-[#1A1A2E]">
           Browse by Type
@@ -109,7 +109,7 @@ function FeaturedGrid({ opportunities }: { opportunities: Opportunity[] }) {
 
 function FeaturedSection({ opportunities }: { opportunities: Opportunity[] }) {
   return (
-    <section className="bg-white py-16">
+    <section className="bg-white py-10 sm:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="font-display text-2xl font-semibold text-[#1A1A2E]">
