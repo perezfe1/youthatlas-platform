@@ -61,14 +61,14 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
 
   return (
     <div className="relative">
-      <div className="absolute right-2 top-2 z-10">
+      <div className="absolute right-3 top-3 z-10">
         <SaveButton opportunityId={id} size="sm" />
       </div>
       <Link
         href={`/opportunities/${slug}`}
         className="flex min-h-[220px] flex-col rounded-lg border border-slate-200 bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
       >
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex flex-wrap items-start gap-2 pr-8">
           <OpportunityBadge label={type} variant={type} />
           <DeadlineBadge deadline={deadline} />
         </div>

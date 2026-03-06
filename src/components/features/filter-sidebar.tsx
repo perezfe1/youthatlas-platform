@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { OPPORTUNITY_TYPES, REGIONS } from '@/types/opportunity';
 import type { OpportunityFilters, OpportunityType, Region } from '@/types/opportunity';
-import { toggleType, toggleRegion, toggleFunded } from '@/lib/filter-urls';
+import { toggleType, toggleRegion, toggleFunded, toggleExpired } from '@/lib/filter-urls';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -129,6 +129,16 @@ export function FilterSidebar({ currentFilters, typeCounts }: Props) {
             />
           ))}
         </div>
+      </div>
+
+      {/* Deadline */}
+      <div className="rounded-lg border border-slate-200 bg-white p-4">
+        <SectionHeading>Deadline</SectionHeading>
+        <CheckRow
+          href={toggleExpired(currentFilters)}
+          label="Show Expired"
+          checked={!!currentFilters.show_expired}
+        />
       </div>
     </div>
   );

@@ -16,9 +16,10 @@ type Props = {
 
 // ── Heart icon ─────────────────────────────────────────────────────────────────
 
-function HeartIcon({ filled }: { filled: boolean }) {
+function HeartIcon({ filled, className }: { filled: boolean; className?: string }) {
   return (
     <svg
+      className={className}
       viewBox="0 0 24 24"
       fill={filled ? 'currentColor' : 'none'}
       stroke="currentColor"
@@ -104,18 +105,21 @@ export function SaveButton({ opportunityId, size = 'md' }: Props) {
     }
   }
 
-  const sizeClass = size === 'sm' ? 'h-10 w-10' : 'h-10 w-10';
+  const sizeClass = size === 'sm' ? 'h-8 w-8' : 'h-10 w-10';
+  const iconClass = size === 'sm' ? 'h-4 w-4' : 'h-5 w-5';
 
   return (
     <button
       type="button"
       onClick={handleClick}
       aria-label={isSaved ? 'Remove from saved' : 'Save opportunity'}
-      className={`flex items-center justify-center rounded-full transition-colors ${sizeClass} ${
-        loading ? 'pointer-events-none opacity-50' : ''
-      } ${isSaved ? 'text-red-500' : 'text-slate-400 hover:text-red-400'}`}
+      className={`flex items-center justify-center rounded-full transition-colors ${sizeClass}${
+        size === 'sm' ? ' bg-white/80 shadow-sm' : ''
+      } ${loading ? 'pointer-events-none opacity-50' : ''} ${
+        isSaved ? 'text-red-500' : 'text-slate-400 hover:text-red-400'
+      }`}
     >
-      <HeartIcon filled={isSaved} />
+      <HeartIcon filled={isSaved} className={iconClass} />
     </button>
   );
 }

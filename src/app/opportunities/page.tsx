@@ -40,6 +40,7 @@ function parseSearchParams(
     .filter((r): r is Region => REGIONS.includes(r as Region));
 
   const is_fully_funded = sp.funded === 'true' ? true : undefined;
+  const show_expired = sp.expired === 'true' ? true : undefined;
   const search_query =
     typeof sp.search === 'string' && sp.search ? sp.search : undefined;
   const page =
@@ -49,6 +50,7 @@ function parseSearchParams(
     types: types.length > 0 ? types : undefined,
     regions: regions.length > 0 ? regions : undefined,
     is_fully_funded,
+    show_expired,
     search_query,
     page,
   };
@@ -70,7 +72,7 @@ function PageHeader({ title, count }: { title: string; count: number }) {
       <h1 className="font-display text-2xl font-bold text-[#1A1A2E] sm:text-3xl">{title}</h1>
       <p className="mt-1 text-sm text-text-secondary">
         Showing {count.toLocaleString()}{' '}
-        {count === 1 ? 'opportunity' : 'opportunities'}
+        {count === 1 ? 'opportunity' : 'opportunities'} · Sorted by deadline
       </p>
     </div>
   );

@@ -101,6 +101,7 @@ export interface OpportunityFilters {
   field?: string;
   education_level?: EducationLevel;
   is_fully_funded?: boolean;
+  show_expired?: boolean;        // when true, include past-deadline opportunities
   deadline_before?: string;
   search_query?: string;
   page?: number;

@@ -106,12 +106,6 @@ function MainContent({ opp }: MainContentProps) {
 type KeyDetailsListProps = { opp: Opportunity };
 
 function KeyDetailsList({ opp }: KeyDetailsListProps) {
-  const applyUrl = opp.application_url || opp.source_url;
-  const sourceHostname = (() => {
-    try { return new URL(opp.source_url).hostname.replace(/^www\./, ''); }
-    catch { return opp.source_url; }
-  })();
-
   return (
     <ul className="mt-6 space-y-4 text-sm">
       {/* Deadline */}
@@ -164,23 +158,6 @@ function KeyDetailsList({ opp }: KeyDetailsListProps) {
         </div>
       </li>
 
-      {/* Source */}
-      <li className="flex items-start gap-3">
-        <span className="mt-0.5 shrink-0 text-base" aria-hidden="true">🔗</span>
-        <div className="min-w-0">
-          <span className="font-medium text-[#1A1A2E]">Source</span>
-          <p className="truncate">
-            <a
-              href={applyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              {sourceHostname}
-            </a>
-          </p>
-        </div>
-      </li>
     </ul>
   );
 }

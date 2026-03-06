@@ -35,6 +35,12 @@ export async function getOpportunities(
       .select('*', { count: 'exact' })
       .eq('status', 'active');
 
+    // Hide expired by default — only show upcoming or rolling deadlines
+    if (!filters?.show_expired) {
+      const today = new Date().toISOString().split('T')[0]!;
+      q = q.or(`deadline.is.null,deadline.gte.${today}`);
+    }
+
     if (filters?.types?.length) q = q.in('type', filters.types);
     else if (filters?.type) q = q.eq('type', filters.type);
     if (filters?.regions?.length) q = q.overlaps('regions', filters.regions);
@@ -47,6 +53,7 @@ export async function getOpportunities(
 
     const { data, error, count } = await q
       .order('deadline', { ascending: true, nullsFirst: false })
+      .order('completeness_score', { ascending: false })
       .range(from, to);
 
     if (error) {
@@ -75,6 +82,12 @@ async function getOpportunitiesIlikeFallback(filters: OpportunityFilters): Promi
       .eq('status', 'active')
       .ilike('title', `%${filters.search_query ?? ''}%`);
 
+    // Hide expired by default — only show upcoming or rolling deadlines
+    if (!filters.show_expired) {
+      const today = new Date().toISOString().split('T')[0]!;
+      q = q.or(`deadline.is.null,deadline.gte.${today}`);
+    }
+
     if (filters.types?.length) q = q.in('type', filters.types);
     else if (filters.type) q = q.eq('type', filters.type);
     if (filters.regions?.length) q = q.overlaps('regions', filters.regions);
@@ -86,6 +99,7 @@ async function getOpportunitiesIlikeFallback(filters: OpportunityFilters): Promi
 
     const { data, error, count } = await q
       .order('deadline', { ascending: true, nullsFirst: false })
+      .order('completeness_score', { ascending: false })
       .range(from, to);
 
     if (error) return dbError('DB_ERROR', error.message);

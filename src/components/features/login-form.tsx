@@ -79,12 +79,14 @@ export function LoginForm({ redirectUrl }: Props) {
         <form onSubmit={handleOtpSubmit} className="mt-6 space-y-4">
           <div>
             <label htmlFor="token" className="mb-1 block text-sm font-medium text-slate-700">
-              6-digit code
+              Enter the 6-digit code from your email
             </label>
             <input
               id="token"
               type="text"
               inputMode="numeric"
+              pattern="[0-9]*"
+              autoComplete="one-time-code"
               maxLength={6}
               value={token}
               onChange={(e) => setToken(e.target.value.replace(/\D/g, ''))}
@@ -94,6 +96,7 @@ export function LoginForm({ redirectUrl }: Props) {
               className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-center text-lg tracking-widest focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
             {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+            <p className="mt-2 text-xs text-slate-400">Check your spam folder if you don&apos;t see the email.</p>
           </div>
 
           <button
