@@ -1,0 +1,29 @@
+# YouthAtlas
+
+> YouthAtlas is an AI-powered platform that helps young people discover scholarships, fellowships, internships, grants, conferences, competitions, training programs, and jobs worldwide.
+
+## Content
+
+- /opportunities — Browse all opportunities with filters (type, region, funding)
+- /scholarships — Scholarships for students
+- /fellowships — Fellowship opportunities
+- /grants — Grants for students and researchers
+- /internships — Internships at international organizations
+- /conferences — Student and youth conferences
+- /competitions — Competitions, hackathons, and awards
+- /training — Training programs and bootcamps
+- /jobs — Entry-level jobs and graduate programs
+
+Each type page has regional sub-pages (e.g. /scholarships/africa, /fellowships/europe) and a fully-funded filter (e.g. /scholarships/fully-funded).
+
+## Regions Covered
+
+Africa, Asia, Europe, Latin America, North America, Middle East, Oceania, Global
+
+## Data
+
+Opportunities are updated daily. Each listing includes: title, organization, type, deadline, regions, target audience, funding details, description, and application link.
+
+## Contact
+
+Website: https://youthatlas.com

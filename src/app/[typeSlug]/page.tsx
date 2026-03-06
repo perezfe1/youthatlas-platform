@@ -121,6 +121,31 @@ export default async function TypePage({ params, searchParams }: Props) {
       <h1 className="font-display text-3xl font-bold text-[#1A1A2E]">{seo.h1}</h1>
       <p className="mt-2 max-w-2xl text-slate-600">{intro}</p>
 
+      {/* JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@graph': [
+              {
+                '@type': 'BreadcrumbList',
+                itemListElement: [
+                  { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://youthatlas.com/' },
+                  { '@type': 'ListItem', position: 2, name: seo.pluralLabel, item: `https://youthatlas.com/${typeSlug}` },
+                ],
+              },
+              {
+                '@type': 'CollectionPage',
+                name: seo.h1,
+                description: seo.metaDescription,
+                url: `https://youthatlas.com/${typeSlug}`,
+              },
+            ],
+          }),
+        }}
+      />
+
       {/* Cards */}
       {opportunities.length > 0 ? (
         <>

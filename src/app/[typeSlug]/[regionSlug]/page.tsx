@@ -159,6 +159,32 @@ export default async function TypeRegionPage({ params, searchParams }: Props) {
       <h1 className="font-display text-3xl font-bold text-[#1A1A2E]">{seo.h1}</h1>
       <p className="mt-2 max-w-2xl text-slate-600">{intro}</p>
 
+      {/* JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@graph': [
+              {
+                '@type': 'BreadcrumbList',
+                itemListElement: [
+                  { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://youthatlas.com/' },
+                  { '@type': 'ListItem', position: 2, name: typeSeo.pluralLabel, item: `https://youthatlas.com/${typeSlug}` },
+                  { '@type': 'ListItem', position: 3, name: crumbLabel, item: `https://youthatlas.com/${typeSlug}/${regionSlug}` },
+                ],
+              },
+              {
+                '@type': 'CollectionPage',
+                name: seo.h1,
+                description: seo.metaDescription,
+                url: `https://youthatlas.com/${typeSlug}/${regionSlug}`,
+              },
+            ],
+          }),
+        }}
+      />
+
       {/* Cards */}
       {opportunities.length > 0 ? (
         <>

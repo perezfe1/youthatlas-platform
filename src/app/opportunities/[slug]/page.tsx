@@ -277,8 +277,40 @@ export default async function OpportunityDetailPage({
   if (result.error) notFound();
   const opp = result.data;
 
+  const oppUrl = `https://youthatlas.com/opportunities/${opp.slug}`;
+  const oppJsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Browse', item: 'https://youthatlas.com/opportunities' },
+          { '@type': 'ListItem', position: 2, name: opp.type, item: `https://youthatlas.com/opportunities?type=${opp.type}` },
+          { '@type': 'ListItem', position: 3, name: opp.title },
+        ],
+      },
+      {
+        '@type': 'WebPage',
+        name: opp.title,
+        description: opp.summary || opp.description.slice(0, 160),
+        url: oppUrl,
+        about: {
+          '@type': 'Thing',
+          name: opp.title,
+          description: opp.summary || opp.description.slice(0, 300),
+          ...(opp.organization && { provider: { '@type': 'Organization', name: opp.organization } }),
+          ...(opp.deadline && { temporal: opp.deadline }),
+        },
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(oppJsonLd) }}
+      />
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="lg:grid lg:grid-cols-3 lg:gap-8">
           {/* Main content — 2/3 width on lg+ */}
