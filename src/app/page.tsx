@@ -14,6 +14,17 @@ const TYPE_EMOJI: Record<string, string> = {
   conference: '🎤', competition: '🏆', training: '📚', job: '👔',
 };
 
+const TYPE_SLUG: Record<string, string> = {
+  scholarship: '/scholarships',
+  fellowship: '/fellowships',
+  grant: '/grants',
+  internship: '/internships',
+  conference: '/conferences',
+  competition: '/competitions',
+  training: '/training',
+  job: '/jobs',
+};
+
 // ── Section: Hero ─────────────────────────────────────────────────────────────
 
 function SearchIcon() {
@@ -35,7 +46,16 @@ function HeroSection({ totalCount }: { totalCount: number }) {
           Scholarships, fellowships, grants, internships and more — aggregated from 50+ sources worldwide.
         </p>
         <p className="mt-6 text-sm text-text-secondary">
-          {totalCount.toLocaleString()}+ opportunities and growing
+          Browse {totalCount.toLocaleString()}+ opportunities updated daily. Get notified via{' '}
+          <a
+            href="https://t.me/youthatlas1"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-primary"
+          >
+            Telegram
+          </a>{' '}
+          or email.
         </p>
         <HeroSearch />
       </div>
@@ -66,10 +86,11 @@ function HeroSearch() {
 function TypeTile({ type, count }: { type: string; count: number }) {
   const emoji = TYPE_EMOJI[type] ?? '📋';
   const label = type.charAt(0).toUpperCase() + type.slice(1);
+  const href = TYPE_SLUG[type] ?? `/opportunities?type=${type}`;
 
   return (
     <Link
-      href={`/opportunities?type=${type}`}
+      href={href}
       className="rounded-lg border border-slate-200 bg-white p-4 text-center transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
     >
       <span className="text-2xl">{emoji}</span>

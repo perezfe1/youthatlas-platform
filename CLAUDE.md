@@ -16,7 +16,9 @@ All 5 modules done: Supabase schema, 10 migrations (tables, indexes, full-text s
 ### Phase 1 — Scraper Pipeline (COMPLETE)
 All 9 modules done. 5 scrapers (YouthOp, OFY, OpDesk, AfterSchool, ScholAds) feeding 290+ opportunities into Supabase. Daily automated pipeline via GitHub Actions with Telegram health monitoring.
 
-### Phase 2 — Web Platform (IN PROGRESS)
+### Phase 2 — Web Platform (COMPLETE)
+All 10 modules done, plus usability fixes:
+
 | Module | Status |
 |--------|--------|
 | 2.1 Service layer + design system | DONE |
@@ -26,15 +28,46 @@ All 9 modules done. 5 scrapers (YouthOp, OFY, OpDesk, AfterSchool, ScholAds) fee
 | 2.5 Search (debounced, URL-driven) | DONE |
 | 2.6 Auth (magic link OTP) | DONE |
 | 2.7 Save / bookmarks | DONE |
-| 2.8 User Dashboard (/dashboard: saved list + profile settings, auth-gated) | TODO |
-| 2.9 SEO Programmatic Pages (/scholarships, /fellowships/africa, sitemap.xml) | TODO |
-| 2.10 Mobile Responsive Pass (polish all pages at 375px) | TODO |
+| 2.8 User Dashboard (/dashboard: saved list + profile settings, auth-gated) | DONE |
+| 2.9 SEO Programmatic Pages (/scholarships, /fellowships/africa, sitemap.xml) | DONE |
+| 2.10 Mobile Responsive Pass (polish all pages at 375px) | DONE |
+
+### Phase 3 — Distribution (COMPLETE)
+| Feature | Status |
+|---------|--------|
+| Telegram auto-posting (`distribute-telegram.yml`, daily after ingest) | DONE |
+| Email newsletter signup (Kit/ConvertKit API, `/api/subscribe`) | DONE |
+| Weekly email digest (`weekly-digest.yml`, Monday 8AM UTC, Kit broadcast) | DONE |
+
+### Phase 4 — Content & Polish (IN PROGRESS)
+| Module | Status |
+|--------|--------|
+| 4.1 Legal pages (Privacy Policy `/privacy`, Terms of Service `/terms`) | DONE |
+| 4.2 About page (`/about`) | DONE |
+| 4.3 Homepage polish (SEO type links, Telegram/email subheadline) | DONE |
+| 4.4 CLAUDE.md update | DONE |
+| 4.5 JSON-LD structured data + llms.txt + AI bot rules | TODO |
 
 ## Tech Stack
 
 - Next.js 14 (App Router) / TypeScript (strict) / Tailwind CSS
 - Supabase (Postgres + Auth + Edge Functions)
+- Kit (ConvertKit) — email newsletter (API v3 broadcasts, API v4 subscribers)
 - Deployed on Vercel
+
+## Distribution Channels
+
+- **Telegram:** Public channel [@youthatlas1](https://t.me/youthatlas1) — daily opportunity posts
+- **Email:** Weekly digest via Kit/ConvertKit — every Monday 8AM UTC
+- **Web:** https://youthatlas.com (Vercel)
+
+## GitHub Actions Workflows (scrapers repo)
+
+| Workflow | Schedule | Purpose |
+|----------|----------|---------|
+| `ingest.yml` ("Daily Ingest Pipeline") | Daily at 6AM UTC | Scrape + store opportunities |
+| `distribute-telegram.yml` | Triggered by ingest | Post new opportunities to Telegram |
+| `weekly-digest.yml` ("Weekly Email Digest") | Monday 8AM UTC | Send Kit broadcast email |
 
 ## Design System
 
@@ -57,6 +90,8 @@ All 9 modules done. 5 scrapers (YouthOp, OFY, OpDesk, AfterSchool, ScholAds) fee
 - **`force-dynamic` on all pages.** Every `page.tsx` must export `export const dynamic = 'force-dynamic'` — Supabase queries use cookies/headers which break static generation.
 - **Claude model string:** The scrapers use `claude-haiku-4-5-20251001` (the old `claude-3-5-haiku` was retired). Always use this exact model ID.
 - **Telegram env var:** The correct env var is `TELEGRAM_CHANNEL_ID`, NOT `TELEGRAM_CHAT_ID`. Using the wrong name silently fails.
+- **Kit API versions:** Use v3 (`api.convertkit.com/v3`) for broadcasts/subscribers add. Use v4 (`api.kit.com/v4`) for subscriber listing with cursor pagination.
+- **Kit broadcast = draft.** `POST /v3/broadcasts` creates a draft only — must be reviewed and published in the Kit dashboard.
 
 ## No-Touch Files (never modify without explicit instruction)
 
@@ -66,12 +101,34 @@ All 9 modules done. 5 scrapers (YouthOp, OFY, OpDesk, AfterSchool, ScholAds) fee
 
 ## Key Files
 
+### Platform (this repo)
 - `src/types/opportunity.ts` — `Opportunity` interface + all enum types (source of truth, shared with scrapers repo)
 - `src/services/opportunity-service.ts` — all Supabase queries
 - `src/services/search-service.ts` — search/filter logic
 - `src/config/constants.ts` — pagination, site-wide constants
+- `src/config/site.ts` — site metadata + nav links
 - `src/app/globals.css` — CSS custom property definitions (light + dark tokens)
 - `tailwind.config.ts` — semantic color + font family extensions
+- `src/app/page.tsx` — homepage (Hero, Browse by Type, Featured, Newsletter)
+- `src/app/[typeSlug]/page.tsx` — SEO type pages (/scholarships, /fellowships, etc.)
+- `src/app/[typeSlug]/[regionSlug]/page.tsx` — SEO type+region pages (/scholarships/africa, etc.)
+- `src/app/opportunities/[slug]/page.tsx` — opportunity detail page
+- `src/app/about/page.tsx` — About page
+- `src/app/privacy/page.tsx` — Privacy Policy
+- `src/app/terms/page.tsx` — Terms of Service
+- `src/app/api/subscribe/route.ts` — newsletter signup endpoint (rate-limited, Kit v3)
+- `src/components/features/email-signup.tsx` — newsletter signup component (hero + footer variants)
+- `src/components/layouts/header.tsx` — sticky header with mobile nav
+- `src/components/layouts/footer.tsx` — footer with Browse, About, and Newsletter columns
+
+### Scrapers repo (../youthatlas-scrapers)
+- `src/distribution/telegram-distributor.ts` — post new opportunities to Telegram
+- `src/distribution/kit-client.ts` — Kit API (getSubscribers, sendBroadcast)
+- `src/distribution/email-formatter.ts` — weekly digest HTML email builder
+- `src/distribution/run-email-digest.ts` — CLI entry for weekly digest
+- `.github/workflows/ingest.yml` — daily scrape + ingest pipeline
+- `.github/workflows/distribute-telegram.yml` — triggered after ingest, posts to Telegram
+- `.github/workflows/weekly-digest.yml` — Monday 8AM UTC, sends Kit broadcast
 
 ## Import Order Convention
 
