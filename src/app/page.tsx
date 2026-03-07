@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { OpportunityCard } from '@/components/features/opportunity-card';
+import { NewsletterForm } from '@/components/features/newsletter-form';
 import { getOpportunities, getFeaturedOpportunities, getOpportunityTypes } from '@/services/opportunity-service';
 import type { Opportunity } from '@/types/opportunity';
 
@@ -135,6 +136,25 @@ function FeaturedSection({ opportunities }: { opportunities: Opportunity[] }) {
   );
 }
 
+// ── Section: Newsletter ───────────────────────────────────────────────────────
+
+function NewsletterSection() {
+  return (
+    <section className="bg-gradient-to-r from-blue-600 to-violet-600 py-14 sm:py-20">
+      <div className="mx-auto max-w-2xl px-4 text-center sm:px-6">
+        <h2 className="font-display text-2xl font-bold text-white sm:text-3xl">
+          Never miss an opportunity
+        </h2>
+        <p className="mt-3 text-base text-blue-100">
+          Get the latest scholarships, fellowships, and grants delivered to your inbox every week.
+        </p>
+        <NewsletterForm />
+        <p className="mt-4 text-xs text-blue-200">No spam. Unsubscribe anytime.</p>
+      </div>
+    </section>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function HomePage() {
@@ -153,6 +173,7 @@ export default async function HomePage() {
       <HeroSection totalCount={totalCount} />
       <TypeGridSection types={types} />
       <FeaturedSection opportunities={featured} />
+      <NewsletterSection />
     </>
   );
 }

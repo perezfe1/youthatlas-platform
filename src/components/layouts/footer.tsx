@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { NewsletterFormCompact } from '@/components/features/newsletter-form';
+
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 const BROWSE_LINKS = [
@@ -47,16 +49,29 @@ function FooterColumn({ title, links }: { title: string; links: ReadonlyArray<{ 
   );
 }
 
+function FooterNewsletter() {
+  return (
+    <div>
+      <h3 className="text-sm font-semibold text-white">Stay updated</h3>
+      <p className="mt-2 text-xs text-slate-400">Weekly opportunities in your inbox.</p>
+      <div className="mt-3">
+        <NewsletterFormCompact />
+      </div>
+    </div>
+  );
+}
+
 // ── Footer ────────────────────────────────────────────────────────────────────
 
 export function Footer() {
   return (
     <footer className="mt-auto bg-[#1A1A2E] text-white">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <FooterBrand />
           <FooterColumn title="Browse" links={BROWSE_LINKS} />
           <FooterColumn title="About" links={ABOUT_LINKS} />
+          <FooterNewsletter />
         </div>
 
         <div className="mt-10 border-t border-slate-700 pt-6">

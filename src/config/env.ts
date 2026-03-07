@@ -52,3 +52,29 @@ export function getServerEnv(): ServerEnv {
   }
   return validateServerEnv();
 }
+
+// ── Kit (ConvertKit) env ───────────────────────────────────────────────────────
+
+const kitEnvSchema = z.object({
+  KIT_API_KEY: z.string().min(1),
+  KIT_FORM_ID: z.string().min(1),
+});
+
+export type KitEnv = z.infer<typeof kitEnvSchema>;
+
+export function getKitEnv(): KitEnv {
+  if (typeof window !== 'undefined') {
+    throw new Error('getKitEnv() called in browser — this is a server-only function');
+  }
+  const result = kitEnvSchema.safeParse({
+    KIT_API_KEY: process.env.KIT_API_KEY,
+    KIT_FORM_ID: process.env.KIT_FORM_ID,
+  });
+  if (!result.success) {
+    const missing = result.error.issues
+      .map((i) => `  ${i.path.join('.')}: ${i.message}`)
+      .join('\n');
+    throw new Error(`Kit environment validation failed:\n${missing}`);
+  }
+  return result.data;
+}
