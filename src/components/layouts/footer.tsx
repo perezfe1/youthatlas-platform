@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { NewsletterFormCompact } from '@/components/features/newsletter-form';
+import { EmailSignup } from '@/components/features/email-signup';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
@@ -52,10 +52,9 @@ function FooterColumn({ title, links }: { title: string; links: ReadonlyArray<{ 
 function FooterNewsletter() {
   return (
     <div>
-      <h3 className="text-sm font-semibold text-white">Stay updated</h3>
-      <p className="mt-2 text-xs text-slate-400">Weekly opportunities in your inbox.</p>
+      <h3 className="text-sm font-semibold text-white">Weekly Newsletter</h3>
       <div className="mt-3">
-        <NewsletterFormCompact />
+        <EmailSignup variant="footer" />
       </div>
     </div>
   );

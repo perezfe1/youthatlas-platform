@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 import { OpportunityCard } from '@/components/features/opportunity-card';
-import { NewsletterForm } from '@/components/features/newsletter-form';
+import { EmailSignup } from '@/components/features/email-signup';
 import { getOpportunities, getFeaturedOpportunities, getOpportunityTypes } from '@/services/opportunity-service';
 import type { Opportunity } from '@/types/opportunity';
 
@@ -140,16 +140,17 @@ function FeaturedSection({ opportunities }: { opportunities: Opportunity[] }) {
 
 function NewsletterSection() {
   return (
-    <section className="bg-gradient-to-r from-blue-600 to-violet-600 py-14 sm:py-20">
-      <div className="mx-auto max-w-2xl px-4 text-center sm:px-6">
-        <h2 className="font-display text-2xl font-bold text-white sm:text-3xl">
-          Never miss an opportunity
+    <section className="bg-gradient-to-br from-blue-50 to-violet-50 py-12 px-4">
+      <div className="mx-auto max-w-2xl text-center">
+        <h2 className="font-display text-2xl font-bold text-[#1A1A2E]">
+          Never Miss an Opportunity
         </h2>
-        <p className="mt-3 text-base text-blue-100">
-          Get the latest scholarships, fellowships, and grants delivered to your inbox every week.
+        <p className="mt-3 text-slate-600">
+          Get the best scholarships, fellowships, and grants delivered to your inbox weekly.
         </p>
-        <NewsletterForm />
-        <p className="mt-4 text-xs text-blue-200">No spam. Unsubscribe anytime.</p>
+        <div className="mt-6">
+          <EmailSignup variant="hero" />
+        </div>
       </div>
     </section>
   );

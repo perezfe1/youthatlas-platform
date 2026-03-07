@@ -56,8 +56,7 @@ export function getServerEnv(): ServerEnv {
 // ── Kit (ConvertKit) env ───────────────────────────────────────────────────────
 
 const kitEnvSchema = z.object({
-  KIT_API_KEY: z.string().min(1),
-  KIT_FORM_ID: z.string().min(1),
+  KIT_API_SECRET: z.string().min(1),
 });
 
 export type KitEnv = z.infer<typeof kitEnvSchema>;
@@ -67,8 +66,7 @@ export function getKitEnv(): KitEnv {
     throw new Error('getKitEnv() called in browser — this is a server-only function');
   }
   const result = kitEnvSchema.safeParse({
-    KIT_API_KEY: process.env.KIT_API_KEY,
-    KIT_FORM_ID: process.env.KIT_FORM_ID,
+    KIT_API_SECRET: process.env.KIT_API_SECRET,
   });
   if (!result.success) {
     const missing = result.error.issues
