@@ -14,7 +14,8 @@ const BROWSE_LINKS = [
 
 const ABOUT_LINKS = [
   { label: 'About', href: '/about' },
-  { label: 'Contact', href: '/contact' },
+  { label: 'Privacy Policy', href: '/privacy' },
+  { label: 'Terms of Service', href: '/terms' },
 ] as const;
 
 // ── Sub-components ────────────────────────────────────────────────────────────
