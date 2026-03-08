@@ -18,6 +18,10 @@ const ABOUT_LINKS = [
   { label: 'Terms of Service', href: '/terms' },
 ] as const;
 
+const PARTNER_LINKS = [
+  { label: 'Feature Your Opportunity', href: '/advertise' },
+] as const;
+
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function FooterBrand() {
@@ -67,10 +71,11 @@ export function Footer() {
   return (
     <footer className="mt-auto bg-[#1A1A2E] text-white">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5">
           <FooterBrand />
           <FooterColumn title="Browse" links={BROWSE_LINKS} />
           <FooterColumn title="About" links={ABOUT_LINKS} />
+          <FooterColumn title="Work With Us" links={PARTNER_LINKS} />
           <FooterNewsletter />
         </div>
 

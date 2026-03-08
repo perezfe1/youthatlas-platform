@@ -46,6 +46,38 @@ export const profileUpdateSchema = z.object({
     .optional(),
 });
 
+export const advertiseSchema = z.object({
+  orgName: z
+    .string({ required_error: 'Organization name is required' })
+    .min(2, 'Organization name must be at least 2 characters')
+    .max(200, 'Organization name must be 200 characters or fewer')
+    .trim(),
+  contactEmail: z
+    .string({ required_error: 'Email is required' })
+    .email('Invalid email address')
+    .trim()
+    .toLowerCase(),
+  opportunityTitle: z
+    .string({ required_error: 'Opportunity title is required' })
+    .min(2, 'Title must be at least 2 characters')
+    .max(300, 'Title must be 300 characters or fewer')
+    .trim(),
+  opportunityUrl: z
+    .string({ required_error: 'Opportunity URL is required' })
+    .url('Invalid URL')
+    .trim(),
+  opportunityDescription: z
+    .string()
+    .max(1000, 'Description must be 1000 characters or fewer')
+    .trim()
+    .optional(),
+  message: z
+    .string()
+    .max(500, 'Message must be 500 characters or fewer')
+    .trim()
+    .optional(),
+});
+
 /** auth/profile only checks auth — no body fields to validate */
 export const authProfileSchema = z.object({}).strict();
 
@@ -53,6 +85,7 @@ export const authProfileSchema = z.object({}).strict();
 
 export type SubscribeInput = z.infer<typeof subscribeSchema>;
 export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>;
+export type AdvertiseInput = z.infer<typeof advertiseSchema>;
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 

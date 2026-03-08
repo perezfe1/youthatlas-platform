@@ -7,6 +7,7 @@ const clientEnvSchema = z.object({
 
 const serverEnvSchema = clientEnvSchema.extend({
   SUPABASE_SERVICE_KEY: z.string().min(1),
+  OPENAI_API_KEY: z.string().min(1),
 });
 
 export type ClientEnv = z.infer<typeof clientEnvSchema>;
@@ -31,6 +32,7 @@ function validateServerEnv(): ServerEnv {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   });
   if (!result.success) {
     const missing = result.error.issues
@@ -51,6 +53,36 @@ export function getServerEnv(): ServerEnv {
     throw new Error('getServerEnv() called in browser — this is a server-only function');
   }
   return validateServerEnv();
+}
+
+// ── Advertise env (Telegram + Resend + admin email) ──────────────────────────
+
+const advertiseEnvSchema = z.object({
+  ADMIN_EMAIL: z.string().email(),
+  RESEND_API_KEY: z.string().min(1),
+  TELEGRAM_BOT_TOKEN: z.string().min(1),
+  TELEGRAM_CHANNEL_ID: z.string().min(1),
+});
+
+export type AdvertiseEnv = z.infer<typeof advertiseEnvSchema>;
+
+export function getAdvertiseEnv(): AdvertiseEnv {
+  if (typeof window !== 'undefined') {
+    throw new Error('getAdvertiseEnv() called in browser — this is a server-only function');
+  }
+  const result = advertiseEnvSchema.safeParse({
+    ADMIN_EMAIL: process.env.ADMIN_EMAIL,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
+    TELEGRAM_CHANNEL_ID: process.env.TELEGRAM_CHANNEL_ID,
+  });
+  if (!result.success) {
+    const missing = result.error.issues
+      .map((i) => `  ${i.path.join('.')}: ${i.message}`)
+      .join('\n');
+    throw new Error(`Advertise environment validation failed:\n${missing}`);
+  }
+  return result.data;
 }
 
 // ── Kit (ConvertKit) env ───────────────────────────────────────────────────────

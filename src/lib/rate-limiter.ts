@@ -88,3 +88,9 @@ export const profileLimit = createRateLimiter({
   windowMs: 60 * 60 * 1000,
   maxRequests: 20,
 });
+
+/** Featured listing submission — 3 requests per IP per hour */
+export const advertiseLimit = createRateLimiter({
+  windowMs: 60 * 60 * 1000,
+  maxRequests: 3,
+});

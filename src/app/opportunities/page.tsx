@@ -7,7 +7,9 @@ import { ActiveFilters } from '@/components/features/active-filters';
 import { MobileFilterToggle } from '@/components/features/mobile-filter-toggle';
 import { SearchInput } from '@/components/features/search-input';
 import { SearchResultsHeader } from '@/components/features/search-results-header';
+import { FeaturedCard } from '@/components/features/featured-card';
 import { getOpportunities, getOpportunityTypes } from '@/services/opportunity-service';
+import { getActiveFeaturedListings } from '@/services/featured-service';
 import {
   OPPORTUNITY_TYPES,
   REGIONS,
@@ -135,13 +137,15 @@ type PageProps = {
 export default async function OpportunitiesPage({ searchParams }: PageProps) {
   const filters = parseSearchParams(searchParams);
 
-  const [result, typesResult] = await Promise.all([
+  const [result, typesResult, featuredResult] = await Promise.all([
     getOpportunities(filters),
     getOpportunityTypes(),
+    getActiveFeaturedListings(),
   ]);
 
   const opportunities = result.data?.opportunities ?? [];
   const totalCount = result.data?.count ?? 0;
+  const featuredListings = featuredResult.data ?? [];
   const title = buildPageTitle(filters);
   const page = filters.page ?? 1;
 
@@ -180,6 +184,20 @@ export default async function OpportunitiesPage({ searchParams }: PageProps) {
             )}
           </div>
           <ActiveFilters currentFilters={filters} />
+
+          {/* Featured listings — pinned at top */}
+          {featuredListings.length > 0 && (
+            <div className="mt-8">
+              <h2 className="mb-4 text-lg font-semibold text-[#1A1A2E]">
+                ⭐ Featured Opportunities
+              </h2>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                {featuredListings.map((listing) => (
+                  <FeaturedCard key={listing.id} listing={listing} />
+                ))}
+              </div>
+            </div>
+          )}
 
           {opportunities.length > 0 ? (
             <SaveButtonBulk>
