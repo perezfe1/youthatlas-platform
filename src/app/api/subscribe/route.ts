@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { getKitEnv } from '@/config/env';
+import { validateOrigin, corsHeaders, withCors } from '@/lib/api-security';
 
 // ── Rate limiting ──────────────────────────────────────────────────────────────
 // Simple in-memory Map: resets on each deploy, which is acceptable.
@@ -24,16 +25,33 @@ function isRateLimited(ip: string): boolean {
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// ── OPTIONS /api/subscribe — CORS preflight ────────────────────────────────────
+
+export function OPTIONS(request: NextRequest): NextResponse {
+  return new NextResponse(null, {
+    status: 204,
+    headers: corsHeaders(request.headers.get('origin') ?? undefined),
+  });
+}
+
 // ── POST /api/subscribe ────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
+  // Origin validation
+  if (!validateOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   // Rate limit by IP
   const ip =
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
   if (isRateLimited(ip)) {
-    return NextResponse.json(
-      { error: 'Too many requests. Try again later.' },
-      { status: 429 },
+    return withCors(
+      NextResponse.json(
+        { error: 'Too many requests. Try again later.' },
+        { status: 429 },
+      ),
+      request,
     );
   }
 
@@ -42,7 +60,10 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
+    return withCors(
+      NextResponse.json({ error: 'Invalid email' }, { status: 400 }),
+      request,
+    );
   }
 
   const email =
@@ -54,7 +75,10 @@ export async function POST(request: NextRequest) {
       : '';
 
   if (!EMAIL_REGEX.test(email)) {
-    return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
+    return withCors(
+      NextResponse.json({ error: 'Invalid email' }, { status: 400 }),
+      request,
+    );
   }
 
   // Load Kit env
@@ -63,7 +87,10 @@ export async function POST(request: NextRequest) {
     kitEnv = getKitEnv();
   } catch (err) {
     console.error('[subscribe] Kit env missing:', err);
-    return NextResponse.json({ error: 'Subscription failed' }, { status: 500 });
+    return withCors(
+      NextResponse.json({ error: 'Subscription failed' }, { status: 500 }),
+      request,
+    );
   }
 
   // Call Kit API v3 — add subscriber to account
@@ -77,12 +104,18 @@ export async function POST(request: NextRequest) {
     if (!res.ok) {
       const text = await res.text().catch(() => '');
       console.error('[subscribe] Kit API error:', res.status, text);
-      return NextResponse.json({ error: 'Subscription failed' }, { status: 500 });
+      return withCors(
+        NextResponse.json({ error: 'Subscription failed' }, { status: 500 }),
+        request,
+      );
     }
   } catch (err) {
     console.error('[subscribe] Kit API network error:', err);
-    return NextResponse.json({ error: 'Subscription failed' }, { status: 500 });
+    return withCors(
+      NextResponse.json({ error: 'Subscription failed' }, { status: 500 }),
+      request,
+    );
   }
 
-  return NextResponse.json({ success: true });
+  return withCors(NextResponse.json({ success: true }), request);
 }

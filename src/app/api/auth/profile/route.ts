@@ -1,8 +1,9 @@
-import { NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { getServerEnv } from '@/config/env';
+import { validateOrigin, corsHeaders, withCors } from '@/lib/api-security';
 
 /**
  * POST /api/auth/profile
@@ -11,7 +12,24 @@ import { getServerEnv } from '@/config/env';
  * Upserts a row in user_profiles for the authenticated user.
  * Uses the service role key to bypass RLS on first insert.
  */
-export async function POST() {
+
+// ── OPTIONS /api/auth/profile — CORS preflight ────────────────────────────────
+
+export function OPTIONS(request: NextRequest): NextResponse {
+  return new NextResponse(null, {
+    status: 204,
+    headers: corsHeaders(request.headers.get('origin') ?? undefined),
+  });
+}
+
+// ── POST /api/auth/profile ────────────────────────────────────────────────────
+
+export async function POST(request: NextRequest) {
+  // Origin validation
+  if (!validateOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   try {
     // Verify the request comes from an authenticated user
     const supabase = await createServerSupabaseClient();
@@ -21,7 +39,10 @@ export async function POST() {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return withCors(
+        NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
+        request,
+      );
     }
 
     // Use service role to bypass RLS — safe because we verified the JWT above
@@ -39,14 +60,20 @@ export async function POST() {
       );
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return withCors(
+        NextResponse.json({ error: error.message }, { status: 500 }),
+        request,
+      );
     }
 
-    return NextResponse.json({ ok: true });
+    return withCors(NextResponse.json({ ok: true }), request);
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Unexpected error' },
-      { status: 500 },
+    return withCors(
+      NextResponse.json(
+        { error: err instanceof Error ? err.message : 'Unexpected error' },
+        { status: 500 },
+      ),
+      request,
     );
   }
 }

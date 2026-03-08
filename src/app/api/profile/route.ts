@@ -1,10 +1,27 @@
-import { NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { updateProfile } from '@/services/profile-service';
 import { REGIONS, OPPORTUNITY_TYPES } from '@/types/opportunity';
+import { validateOrigin, corsHeaders, withCors } from '@/lib/api-security';
 
-export async function POST(request: Request) {
+// ── OPTIONS /api/profile — CORS preflight ──────────────────────────────────────
+
+export function OPTIONS(request: NextRequest): NextResponse {
+  return new NextResponse(null, {
+    status: 204,
+    headers: corsHeaders(request.headers.get('origin') ?? undefined),
+  });
+}
+
+// ── POST /api/profile ──────────────────────────────────────────────────────────
+
+export async function POST(request: NextRequest) {
+  // Origin validation
+  if (!validateOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   try {
     // Verify auth
     const supabase = await createServerSupabaseClient();
@@ -14,7 +31,10 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return withCors(
+        NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
+        request,
+      );
     }
 
     // Parse body
@@ -44,14 +64,20 @@ export async function POST(request: Request) {
     });
 
     if (result.error) {
-      return NextResponse.json({ error: result.error.message }, { status: 500 });
+      return withCors(
+        NextResponse.json({ error: result.error.message }, { status: 500 }),
+        request,
+      );
     }
 
-    return NextResponse.json({ ok: true });
+    return withCors(NextResponse.json({ ok: true }), request);
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Unexpected error' },
-      { status: 500 },
+    return withCors(
+      NextResponse.json(
+        { error: err instanceof Error ? err.message : 'Unexpected error' },
+        { status: 500 },
+      ),
+      request,
     );
   }
 }
