@@ -8,6 +8,7 @@ import { CopyButton } from '@/components/ui/copy-button';
 import { SaveButton } from '@/components/features/save-button';
 import { getOpportunityBySlug } from '@/services/opportunity-service';
 import { formatDate } from '@/lib/utils';
+import { safeJsonLd } from '@/components/seo/json-ld';
 import type { Opportunity, OpportunityType } from '@/types/opportunity';
 
 export const dynamic = 'force-dynamic';
@@ -286,7 +287,7 @@ export default async function OpportunityDetailPage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(oppJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(oppJsonLd) }}
       />
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="lg:grid lg:grid-cols-3 lg:gap-8">

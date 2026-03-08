@@ -3,6 +3,7 @@ import { Inter, Outfit } from 'next/font/google';
 
 import { Header } from '@/components/layouts/header';
 import { Footer } from '@/components/layouts/footer';
+import { safeJsonLd } from '@/components/seo/json-ld';
 
 import './globals.css';
 
@@ -62,7 +63,7 @@ export default function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
         />
       </head>
       <body className="font-body min-h-screen flex flex-col bg-background text-text-primary">

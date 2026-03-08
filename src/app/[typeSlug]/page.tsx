@@ -6,6 +6,7 @@ import { getOpportunities } from '@/services/opportunity-service';
 import { OpportunityCard } from '@/components/features/opportunity-card';
 import { SaveButtonBulk } from '@/components/features/save-button-bulk';
 import { TYPE_SLUG_MAP, getTypeSeoData } from '@/config/seo';
+import { safeJsonLd } from '@/components/seo/json-ld';
 
 export const dynamic = 'force-dynamic';
 
@@ -125,7 +126,7 @@ export default async function TypePage({ params, searchParams }: Props) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             '@context': 'https://schema.org',
             '@graph': [
               {

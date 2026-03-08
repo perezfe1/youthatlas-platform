@@ -12,6 +12,7 @@ import {
   getTypeSeoData,
   getComboSeoData,
 } from '@/config/seo';
+import { safeJsonLd } from '@/components/seo/json-ld';
 
 export const dynamic = 'force-dynamic';
 // Paths not returned by generateStaticParams automatically get 404
@@ -163,7 +164,7 @@ export default async function TypeRegionPage({ params, searchParams }: Props) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             '@context': 'https://schema.org',
             '@graph': [
               {
