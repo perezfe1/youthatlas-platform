@@ -4,7 +4,6 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 export const ALLOWED_ORIGINS = [
   'http://localhost:3000',
-  'https://youthatlas.vercel.app',
   'https://youthatlas.com',
   'https://www.youthatlas.com',
 ] as const;
@@ -56,7 +55,7 @@ export function corsHeaders(origin?: string): Record<string, string> {
   const allowedOrigin =
     origin !== undefined && isAllowedOrigin(origin)
       ? origin
-      : 'https://youthatlas.vercel.app';
+      : 'https://youthatlas.com';
 
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
