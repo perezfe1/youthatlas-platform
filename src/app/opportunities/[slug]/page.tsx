@@ -6,6 +6,7 @@ import { DeadlineBadge } from '@/components/ui/deadline-badge';
 import { OpportunityBadge } from '@/components/ui/badge';
 import { CopyButton } from '@/components/ui/copy-button';
 import { SaveButton } from '@/components/features/save-button';
+import { ShareButton } from '@/components/features/share-button';
 import { getOpportunityBySlug } from '@/services/opportunity-service';
 import { formatDate } from '@/lib/utils';
 import { safeJsonLd } from '@/components/seo/json-ld';
@@ -27,7 +28,12 @@ export async function generateMetadata({
   return {
     title: `${opp.title} | YouthAtlas`,
     description,
-    openGraph: { title: `${opp.title} | YouthAtlas`, description },
+    openGraph: {
+      title: opp.title,
+      description,
+      images: [`/opportunities/${params.slug}/opengraph-image`],
+      type: 'website',
+    },
   };
 }
 
@@ -217,6 +223,7 @@ function ApplyCard({ opp }: ApplyCardProps) {
   return (
     <div className="sticky top-24 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
       <ApplyButton opp={opp} fullWidth />
+      <ShareButton title={opp.title} slug={opp.slug} />
       <div className="mt-3 flex items-center justify-center">
         <SaveButton opportunityId={opp.id} size="md" />
         <span className="ml-2 text-sm text-slate-500">Save for later</span>
