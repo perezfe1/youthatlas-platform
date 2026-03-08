@@ -2,28 +2,11 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { getKitEnv } from '@/config/env';
 import { validateOrigin, corsHeaders, withCors } from '@/lib/api-security';
-
-// ── Rate limiting ──────────────────────────────────────────────────────────────
-// Simple in-memory Map: resets on each deploy, which is acceptable.
-
-const rateLimitMap = new Map<string, number[]>();
-const RATE_LIMIT_MAX = 5;
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const timestamps = (rateLimitMap.get(ip) ?? []).filter(
-    (t) => now - t < RATE_LIMIT_WINDOW_MS,
-  );
-  if (timestamps.length >= RATE_LIMIT_MAX) return true;
-  timestamps.push(now);
-  rateLimitMap.set(ip, timestamps);
-  return false;
-}
-
-// ── Helpers ────────────────────────────────────────────────────────────────────
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import {
+  subscribeLimit,
+  rateLimitHeaders,
+} from '@/lib/rate-limiter';
+import { subscribeSchema, validateBody } from '@/lib/validation';
 
 // ── OPTIONS /api/subscribe — CORS preflight ────────────────────────────────────
 
@@ -45,41 +28,35 @@ export async function POST(request: NextRequest) {
   // Rate limit by IP
   const ip =
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
-  if (isRateLimited(ip)) {
+  const rl = subscribeLimit.check(ip);
+  const rlHeaders = rateLimitHeaders(rl);
+
+  if (!rl.allowed) {
     return withCors(
       NextResponse.json(
         { error: 'Too many requests. Try again later.' },
-        { status: 429 },
+        {
+          status: 429,
+          headers: rlHeaders,
+        },
       ),
       request,
     );
   }
 
-  // Parse body
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
+  // Validate body
+  const validation = await validateBody(request, subscribeSchema);
+  if (validation.error) {
     return withCors(
-      NextResponse.json({ error: 'Invalid email' }, { status: 400 }),
+      NextResponse.json(
+        { error: validation.error.message },
+        { status: 400, headers: rlHeaders },
+      ),
       request,
     );
   }
 
-  const email =
-    body !== null &&
-    typeof body === 'object' &&
-    'email' in body &&
-    typeof body.email === 'string'
-      ? body.email.trim().toLowerCase()
-      : '';
-
-  if (!EMAIL_REGEX.test(email)) {
-    return withCors(
-      NextResponse.json({ error: 'Invalid email' }, { status: 400 }),
-      request,
-    );
-  }
+  const { email } = validation.data;
 
   // Load Kit env
   let kitEnv: ReturnType<typeof getKitEnv>;
@@ -88,7 +65,10 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     console.error('[subscribe] Kit env missing:', err);
     return withCors(
-      NextResponse.json({ error: 'Subscription failed' }, { status: 500 }),
+      NextResponse.json(
+        { error: 'Subscription failed. Please try again.' },
+        { status: 500, headers: rlHeaders },
+      ),
       request,
     );
   }
@@ -98,24 +78,36 @@ export async function POST(request: NextRequest) {
     const res = await fetch('https://api.convertkit.com/v3/subscribers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ api_secret: kitEnv.KIT_API_SECRET, email_address: email }),
+      body: JSON.stringify({
+        api_secret: kitEnv.KIT_API_SECRET,
+        email_address: email,
+      }),
     });
 
     if (!res.ok) {
       const text = await res.text().catch(() => '');
       console.error('[subscribe] Kit API error:', res.status, text);
       return withCors(
-        NextResponse.json({ error: 'Subscription failed' }, { status: 500 }),
+        NextResponse.json(
+          { error: 'Subscription failed. Please try again.' },
+          { status: 500, headers: rlHeaders },
+        ),
         request,
       );
     }
   } catch (err) {
     console.error('[subscribe] Kit API network error:', err);
     return withCors(
-      NextResponse.json({ error: 'Subscription failed' }, { status: 500 }),
+      NextResponse.json(
+        { error: 'Subscription failed. Please try again.' },
+        { status: 500, headers: rlHeaders },
+      ),
       request,
     );
   }
 
-  return withCors(NextResponse.json({ success: true }), request);
+  return withCors(
+    NextResponse.json({ success: true }, { headers: rlHeaders }),
+    request,
+  );
 }

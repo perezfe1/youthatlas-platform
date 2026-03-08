@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { getServerEnv } from '@/config/env';
 import { validateOrigin, corsHeaders, withCors } from '@/lib/api-security';
+import { authLimit, rateLimitHeaders } from '@/lib/rate-limiter';
 
 /**
  * POST /api/auth/profile
@@ -30,6 +31,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
+  // Rate limit by IP
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  const rl = authLimit.check(ip);
+  const rlHeaders = rateLimitHeaders(rl);
+
+  if (!rl.allowed) {
+    return withCors(
+      NextResponse.json(
+        { error: 'Too many requests. Try again later.' },
+        { status: 429, headers: rlHeaders },
+      ),
+      request,
+    );
+  }
+
   try {
     // Verify the request comes from an authenticated user
     const supabase = await createServerSupabaseClient();
@@ -40,7 +57,10 @@ export async function POST(request: NextRequest) {
 
     if (authError || !user) {
       return withCors(
-        NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
+        NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401, headers: rlHeaders },
+        ),
         request,
       );
     }
@@ -60,18 +80,26 @@ export async function POST(request: NextRequest) {
       );
 
     if (error) {
+      console.error('[auth/profile] upsert error:', error);
       return withCors(
-        NextResponse.json({ error: error.message }, { status: 500 }),
+        NextResponse.json(
+          { error: 'An error occurred. Please try again.' },
+          { status: 500, headers: rlHeaders },
+        ),
         request,
       );
     }
 
-    return withCors(NextResponse.json({ ok: true }), request);
+    return withCors(
+      NextResponse.json({ ok: true }, { headers: rlHeaders }),
+      request,
+    );
   } catch (err) {
+    console.error('[auth/profile] Unexpected error:', err);
     return withCors(
       NextResponse.json(
-        { error: err instanceof Error ? err.message : 'Unexpected error' },
-        { status: 500 },
+        { error: 'An error occurred. Please try again.' },
+        { status: 500, headers: rlHeaders },
       ),
       request,
     );

@@ -2,8 +2,9 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { updateProfile } from '@/services/profile-service';
-import { REGIONS, OPPORTUNITY_TYPES } from '@/types/opportunity';
 import { validateOrigin, corsHeaders, withCors } from '@/lib/api-security';
+import { profileLimit, rateLimitHeaders } from '@/lib/rate-limiter';
+import { profileUpdateSchema, validateBody } from '@/lib/validation';
 
 // ── OPTIONS /api/profile — CORS preflight ──────────────────────────────────────
 
@@ -22,6 +23,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
+  // Rate limit by IP
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  const rl = profileLimit.check(ip);
+  const rlHeaders = rateLimitHeaders(rl);
+
+  if (!rl.allowed) {
+    return withCors(
+      NextResponse.json(
+        { error: 'Too many requests. Try again later.' },
+        { status: 429, headers: rlHeaders },
+      ),
+      request,
+    );
+  }
+
   try {
     // Verify auth
     const supabase = await createServerSupabaseClient();
@@ -32,50 +49,56 @@ export async function POST(request: NextRequest) {
 
     if (authError || !user) {
       return withCors(
-        NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
+        NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401, headers: rlHeaders },
+        ),
         request,
       );
     }
 
-    // Parse body
-    const body = await request.json().catch(() => ({})) as {
-      display_name?: string | null;
-      regions_of_interest?: unknown;
-      types_of_interest?: unknown;
-    };
+    // Validate body
+    const validation = await validateBody(request, profileUpdateSchema);
+    if (validation.error) {
+      return withCors(
+        NextResponse.json(
+          { error: validation.error.message },
+          { status: 400, headers: rlHeaders },
+        ),
+        request,
+      );
+    }
 
-    // Validate and sanitise array fields
-    const validatedRegions = Array.isArray(body.regions_of_interest)
-      ? (body.regions_of_interest as string[]).filter((r) =>
-          REGIONS.includes(r as (typeof REGIONS)[number]),
-        )
-      : undefined;
-
-    const validatedTypes = Array.isArray(body.types_of_interest)
-      ? (body.types_of_interest as string[]).filter((t) =>
-          OPPORTUNITY_TYPES.includes(t as (typeof OPPORTUNITY_TYPES)[number]),
-        )
-      : undefined;
+    const { display_name, regions_of_interest, types_of_interest } =
+      validation.data;
 
     const result = await updateProfile(user.id, {
-      ...(body.display_name !== undefined ? { display_name: body.display_name } : {}),
-      ...(validatedRegions !== undefined ? { regions_of_interest: validatedRegions } : {}),
-      ...(validatedTypes !== undefined ? { types_of_interest: validatedTypes } : {}),
+      ...(display_name !== undefined ? { display_name } : {}),
+      ...(regions_of_interest !== undefined ? { regions_of_interest } : {}),
+      ...(types_of_interest !== undefined ? { types_of_interest } : {}),
     });
 
     if (result.error) {
+      console.error('[profile] updateProfile error:', result.error);
       return withCors(
-        NextResponse.json({ error: result.error.message }, { status: 500 }),
+        NextResponse.json(
+          { error: 'An error occurred. Please try again.' },
+          { status: 500, headers: rlHeaders },
+        ),
         request,
       );
     }
 
-    return withCors(NextResponse.json({ ok: true }), request);
+    return withCors(
+      NextResponse.json({ ok: true }, { headers: rlHeaders }),
+      request,
+    );
   } catch (err) {
+    console.error('[profile] Unexpected error:', err);
     return withCors(
       NextResponse.json(
-        { error: err instanceof Error ? err.message : 'Unexpected error' },
-        { status: 500 },
+        { error: 'An error occurred. Please try again.' },
+        { status: 500, headers: rlHeaders },
       ),
       request,
     );
