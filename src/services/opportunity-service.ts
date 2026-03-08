@@ -149,6 +149,53 @@ export async function getFeaturedOpportunities(limit = 6): Promise<Result<Opport
   }
 }
 
+export async function getRecommendedOpportunities(
+  regions: string[],
+  types: string[],
+  savedIds: string[],
+  limit = 6,
+): Promise<Result<Opportunity[]>> {
+  if (regions.length === 0 && types.length === 0) {
+    return { data: [], error: null };
+  }
+
+  try {
+    const supabase = await createServerSupabaseClient();
+    const today = new Date().toISOString().split('T')[0]!;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let q: any = supabase
+      .from('opportunities')
+      .select('*')
+      .eq('status', 'active')
+      .or(`deadline.is.null,deadline.gte.${today}`);
+
+    // Match EITHER a preferred type OR a preferred region
+    if (types.length > 0 && regions.length > 0) {
+      const formatRegions = `{${regions.join(',')}}`;
+      q = q.or(`type.in.(${types.join(',')}),regions.ov.(${formatRegions})`);
+    } else if (types.length > 0) {
+      q = q.in('type', types);
+    } else {
+      q = q.overlaps('regions', regions);
+    }
+
+    if (savedIds.length > 0) {
+      q = q.not('id', 'in', `(${savedIds.join(',')})`);
+    }
+
+    const { data, error } = await q
+      .order('completeness_score', { ascending: false })
+      .order('deadline', { ascending: true, nullsFirst: false })
+      .limit(limit);
+
+    if (error) return dbError('DB_ERROR', error.message);
+    return { data: (data ?? []) as Opportunity[], error: null };
+  } catch (err) {
+    return dbError('UNEXPECTED', err instanceof Error ? err.message : String(err));
+  }
+}
+
 export async function getOpportunityTypes(): Promise<Result<TypeCount[]>> {
   try {
     const supabase = await createServerSupabaseClient();

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { getProfile } from '@/services/profile-service';
 import { getSavedOpportunities, DASHBOARD_PAGE_SIZE } from '@/services/saved-service-server';
+import { getRecommendedOpportunities } from '@/services/opportunity-service';
 import { OpportunityCard } from '@/components/features/opportunity-card';
 import { SaveButtonBulk } from '@/components/features/save-button-bulk';
 import { ProfileForm } from '@/components/features/profile-form';
@@ -100,9 +101,57 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const savedOpps = savedResult.data?.data ?? [];
   const savedCount = savedResult.data?.count ?? 0;
 
+  const savedIds = savedResult.data?.data.map((opp) => opp.id) ?? [];
+  const { data: recommended } = await getRecommendedOpportunities(
+    profile.regions_of_interest,
+    profile.types_of_interest,
+    savedIds,
+    6,
+  );
+
+  const hasPreferences =
+    profile.regions_of_interest.length > 0 || profile.types_of_interest.length > 0;
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <h1 className="font-display text-2xl font-bold text-[#1A1A2E] sm:text-3xl">Dashboard</h1>
+
+      {/* ── Recommended for You ──────────────────────────────────────────── */}
+      <section className="mt-10">
+        {!hasPreferences ? (
+          <div className="rounded-lg border border-slate-200 bg-white p-8 text-center">
+            <h2 className="font-display text-xl font-semibold text-[#1A1A2E]">
+              Get Personalized Recommendations
+            </h2>
+            <p className="mt-2 text-text-secondary">
+              Set your interests in your profile below to see opportunities matched to you.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-baseline gap-3">
+              <h2 className="font-display text-xl font-semibold text-[#1A1A2E]">
+                Recommended for You
+              </h2>
+              <span className="text-sm text-text-secondary">Based on your interests</span>
+            </div>
+
+            {recommended && recommended.length > 0 ? (
+              <SaveButtonBulk>
+                <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {recommended.map((opp) => (
+                    <OpportunityCard key={opp.id} opportunity={opp} />
+                  ))}
+                </div>
+              </SaveButtonBulk>
+            ) : (
+              <p className="mt-4 text-text-secondary">
+                No new matches right now. We&apos;ll keep looking!
+              </p>
+            )}
+          </>
+        )}
+      </section>
 
       {/* ── Saved Opportunities ──────────────────────────────────────────── */}
       <section className="mt-10">
