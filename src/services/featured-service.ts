@@ -52,7 +52,7 @@ export async function submitFeaturedListing(
   try {
     const supabase = await createServerSupabaseClient();
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('featured_listings')
       .insert({
         org_name: submission.orgName,
@@ -61,12 +61,26 @@ export async function submitFeaturedListing(
         opportunity_url: submission.opportunityUrl,
         opportunity_description: submission.opportunityDescription ?? null,
         message: submission.message ?? null,
-      })
-      .select()
-      .single();
+      });
 
     if (error) return dbError('DB_ERROR', error.message);
-    return { data: toFeaturedListing(data), error: null };
+
+    // Build a minimal response from input data — no .select() needed,
+    // which avoids the RLS SELECT policy requirement for anon inserts.
+    const inserted: FeaturedListing = {
+      id: 'pending',
+      orgName: submission.orgName,
+      contactEmail: submission.contactEmail,
+      opportunityTitle: submission.opportunityTitle,
+      opportunityUrl: submission.opportunityUrl,
+      opportunityDescription: submission.opportunityDescription ?? null,
+      message: submission.message ?? null,
+      isActive: false,
+      activatedAt: null,
+      expiresAt: null,
+      createdAt: new Date().toISOString(),
+    };
+    return { data: inserted, error: null };
   } catch (err) {
     return dbError('UNEXPECTED', err instanceof Error ? err.message : String(err));
   }
