@@ -7,6 +7,8 @@ import { useState } from 'react';
 type ShareButtonProps = {
   title: string;
   slug: string;
+  /** 'default' = full-width with label, 'compact' = icon-only square button */
+  variant?: 'default' | 'compact';
 };
 
 // ── Share icon (arrow-up-from-box) ────────────────────────────────────────────
@@ -34,7 +36,7 @@ function ShareIcon() {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function ShareButton({ title, slug }: ShareButtonProps) {
+export function ShareButton({ title, slug, variant = 'default' }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
 
   async function handleShare() {
@@ -58,6 +60,19 @@ export function ShareButton({ title, slug }: ShareButtonProps) {
     } catch {
       // Clipboard API unavailable — fail silently
     }
+  }
+
+  if (variant === 'compact') {
+    return (
+      <button
+        onClick={handleShare}
+        type="button"
+        className="flex shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white p-3 text-slate-700 transition-colors hover:bg-slate-50"
+        aria-label={copied ? 'Copied!' : 'Share this opportunity'}
+      >
+        <ShareIcon />
+      </button>
+    );
   }
 
   return (

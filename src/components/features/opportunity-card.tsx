@@ -38,7 +38,7 @@ function CardBottom({ regions, isFullyFunded }: { regions: string[]; isFullyFund
   if (regions.length === 0 && !isFullyFunded) return null;
 
   return (
-    <div className="mt-auto flex items-center gap-3 border-t border-slate-100 pt-3">
+    <div className="flex items-center gap-3 border-t border-slate-100 pt-3">
       <RegionPills regions={regions} />
       {isFullyFunded && (
         <span className="ml-auto whitespace-nowrap text-xs font-medium text-emerald-600">
@@ -49,15 +49,37 @@ function CardBottom({ regions, isFullyFunded }: { regions: string[]; isFullyFund
   );
 }
 
+// ── Freshness helper ──────────────────────────────────────────────────────────
+
+function freshnessLabel(createdAt: string): string | null {
+  const now = new Date();
+  const created = new Date(createdAt);
+  const diffMs = now.getTime() - created.getTime();
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (days === 0) return 'Added today';
+  if (days === 1) return 'Added yesterday';
+  if (days <= 7) return `Added ${days} days ago`;
+  if (days <= 14) return 'Added last week';
+  if (days <= 30) {
+    const weeks = Math.floor(days / 7);
+    return `Added ${weeks} week${weeks === 1 ? '' : 's'} ago`;
+  }
+  return null; // Don't show for listings older than 30 days
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 type OpportunityCardProps = {
   opportunity: Opportunity;
+  /** Show a "Matches you" tag when the opportunity aligns with the user's profile */
+  matchesProfile?: boolean;
 };
 
-export function OpportunityCard({ opportunity }: OpportunityCardProps) {
-  const { id, slug, title, type, deadline, organization, summary, regions, is_fully_funded } =
+export function OpportunityCard({ opportunity, matchesProfile }: OpportunityCardProps) {
+  const { id, slug, title, type, deadline, organization, summary, regions, is_fully_funded, created_at } =
     opportunity;
+  const freshness = freshnessLabel(created_at);
 
   return (
     <div className="relative">
@@ -71,6 +93,11 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
         <div className="flex flex-wrap items-start gap-2 pr-8">
           <OpportunityBadge label={type} variant={type} />
           <DeadlineBadge deadline={deadline} />
+          {matchesProfile && (
+            <span className="inline-flex items-center rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700">
+              ✦ Matches you
+            </span>
+          )}
         </div>
 
         <h3 className="mt-3 line-clamp-2 font-display text-lg font-semibold text-[#1A1A2E]">
@@ -85,7 +112,13 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
           <p className="mt-2 line-clamp-2 text-sm text-text-secondary">{summary}</p>
         )}
 
-        <CardBottom regions={regions} isFullyFunded={is_fully_funded} />
+        {/* Push bottom section to card bottom */}
+        <div className="mt-auto">
+          {freshness && (
+            <p className="mb-2 text-xs text-slate-400">{freshness}</p>
+          )}
+          <CardBottom regions={regions} isFullyFunded={is_fully_funded} />
+        </div>
       </Link>
     </div>
   );

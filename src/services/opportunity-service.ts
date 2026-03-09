@@ -196,6 +196,81 @@ export async function getRecommendedOpportunities(
   }
 }
 
+// Shape of rows returned by the search_opportunities_semantic RPC
+type SemanticRow = { id: string; slug: string; similarity: number };
+
+/**
+ * Find opportunities similar to the one identified by `slug` using pgvector.
+ * Fetches the opportunity's embedding, calls the semantic RPC, excludes the
+ * source opportunity, and returns full records sorted by similarity.
+ * Never throws — returns empty array on any failure so the detail page is unaffected.
+ */
+export async function getSimilarOpportunities(
+  slug: string,
+  limit = 4,
+): Promise<Result<Opportunity[]>> {
+  try {
+    const supabase = await createServerSupabaseClient();
+
+    // Step 1: Fetch this opportunity's embedding vector
+    const { data: row, error: fetchErr } = await supabase
+      .from('opportunities')
+      .select('id, embedding')
+      .eq('slug', slug)
+      .eq('status', 'active')
+      .limit(1)
+      .maybeSingle();
+
+    if (fetchErr || !row) return { data: [], error: null };
+
+    const embedding = (row as Record<string, unknown>).embedding;
+    if (!embedding) return { data: [], error: null };
+
+    // Embedding may come as a string from PostgREST — parse if needed
+    const embeddingArray: number[] =
+      typeof embedding === 'string' ? JSON.parse(embedding) : (embedding as number[]);
+
+    // Step 2: Find similar via pgvector RPC
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: rpcRaw, error: rpcError } = (await (supabase.rpc(
+      'search_opportunities_semantic',
+      { query_embedding: embeddingArray, match_threshold: 0.4, match_count: limit + 1 },
+    ) as any)) as { data: SemanticRow[] | null; error: { message: string } | null };
+
+    if (rpcError || !rpcRaw || rpcRaw.length === 0) return { data: [], error: null };
+
+    // Filter out the source opportunity and limit results
+    const slugs = rpcRaw
+      .filter((r) => r.slug !== slug)
+      .slice(0, limit)
+      .map((r) => r.slug);
+
+    if (slugs.length === 0) return { data: [], error: null };
+
+    // Step 3: Fetch full opportunity records
+    const { data: opps, error: oppsErr } = await supabase
+      .from('opportunities')
+      .select('*')
+      .in('slug', slugs)
+      .eq('status', 'active');
+
+    if (oppsErr) return { data: [], error: null };
+
+    // Re-sort by similarity (slug fetch doesn't preserve RPC order)
+    const simMap = new Map(rpcRaw.map((r) => [r.slug, r.similarity]));
+    const sorted = [...(opps ?? [])].sort((a, b) => {
+      const aSlug = (a as { slug: string }).slug;
+      const bSlug = (b as { slug: string }).slug;
+      return (simMap.get(bSlug) ?? 0) - (simMap.get(aSlug) ?? 0);
+    });
+
+    return { data: sorted as Opportunity[], error: null };
+  } catch {
+    // Never break the detail page — graceful empty fallback
+    return { data: [], error: null };
+  }
+}
+
 export async function getOpportunityTypes(): Promise<Result<TypeCount[]>> {
   try {
     const supabase = await createServerSupabaseClient();

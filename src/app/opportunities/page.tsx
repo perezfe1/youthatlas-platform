@@ -8,8 +8,10 @@ import { MobileFilterToggle } from '@/components/features/mobile-filter-toggle';
 import { SearchInput } from '@/components/features/search-input';
 import { SearchResultsHeader } from '@/components/features/search-results-header';
 import { FeaturedCard } from '@/components/features/featured-card';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { getOpportunities, getOpportunityTypes } from '@/services/opportunity-service';
 import { getActiveFeaturedListings } from '@/services/featured-service';
+import { getProfile } from '@/services/profile-service';
 import {
   OPPORTUNITY_TYPES,
   REGIONS,
@@ -136,11 +138,13 @@ type PageProps = {
 
 export default async function OpportunitiesPage({ searchParams }: PageProps) {
   const filters = parseSearchParams(searchParams);
+  const supabase = await createServerSupabaseClient();
 
-  const [result, typesResult, featuredResult] = await Promise.all([
+  const [result, typesResult, featuredResult, authResult] = await Promise.all([
     getOpportunities(filters),
     getOpportunityTypes(),
     getActiveFeaturedListings(),
+    supabase.auth.getUser(),
   ]);
 
   const opportunities = result.data?.opportunities ?? [];
@@ -148,6 +152,23 @@ export default async function OpportunitiesPage({ searchParams }: PageProps) {
   const featuredListings = featuredResult.data ?? [];
   const title = buildPageTitle(filters);
   const page = filters.page ?? 1;
+  const user = authResult.data?.user ?? null;
+
+  // Determine which opportunities match the user's profile preferences
+  const matchingIds = new Set<string>();
+  if (user) {
+    const profileResult = await getProfile(user.id);
+    if (profileResult.data) {
+      const { types_of_interest, regions_of_interest } = profileResult.data;
+      if (types_of_interest.length > 0 || regions_of_interest.length > 0) {
+        for (const opp of opportunities) {
+          const typeMatch = types_of_interest.includes(opp.type);
+          const regionMatch = opp.regions.some((r) => regions_of_interest.includes(r));
+          if (typeMatch || regionMatch) matchingIds.add(opp.id);
+        }
+      }
+    }
+  }
 
   const typeCounts: Record<string, number> = {};
   for (const { type, count } of typesResult.data ?? []) {
@@ -203,7 +224,11 @@ export default async function OpportunitiesPage({ searchParams }: PageProps) {
             <SaveButtonBulk>
               <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {opportunities.map((opp) => (
-                  <OpportunityCard key={opp.id} opportunity={opp} />
+                  <OpportunityCard
+                    key={opp.id}
+                    opportunity={opp}
+                    matchesProfile={matchingIds.has(opp.id)}
+                  />
                 ))}
               </div>
             </SaveButtonBulk>

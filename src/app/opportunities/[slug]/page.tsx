@@ -7,7 +7,9 @@ import { OpportunityBadge } from '@/components/ui/badge';
 import { CopyButton } from '@/components/ui/copy-button';
 import { SaveButton } from '@/components/features/save-button';
 import { ShareButton } from '@/components/features/share-button';
-import { getOpportunityBySlug } from '@/services/opportunity-service';
+import { OpportunityCard } from '@/components/features/opportunity-card';
+import { SaveButtonBulk } from '@/components/features/save-button-bulk';
+import { getOpportunityBySlug, getSimilarOpportunities } from '@/services/opportunity-service';
 import { formatDate } from '@/lib/utils';
 import { safeJsonLd } from '@/components/seo/json-ld';
 import type { Opportunity, OpportunityType } from '@/types/opportunity';
@@ -246,7 +248,12 @@ type MobileApplyBarProps = { opp: Opportunity };
 function MobileApplyBar({ opp }: MobileApplyBarProps) {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white p-4 lg:hidden">
-      <ApplyButton opp={opp} fullWidth />
+      <div className="flex items-center gap-3">
+        <ShareButton title={opp.title} slug={opp.slug} variant="compact" />
+        <div className="flex-1">
+          <ApplyButton opp={opp} fullWidth />
+        </div>
+      </div>
     </div>
   );
 }
@@ -258,9 +265,15 @@ export default async function OpportunityDetailPage({
 }: {
   params: { slug: string };
 }) {
-  const result = await getOpportunityBySlug(params.slug);
+  // Fetch main opportunity + similar in parallel
+  const [result, similarResult] = await Promise.all([
+    getOpportunityBySlug(params.slug),
+    getSimilarOpportunities(params.slug, 4),
+  ]);
+
   if (result.error) notFound();
   const opp = result.data;
+  const similarOpps = similarResult.data ?? [];
 
   const oppUrl = `https://youthatlas.com/opportunities/${opp.slug}`;
   const oppJsonLd = {
@@ -296,24 +309,44 @@ export default async function OpportunityDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(oppJsonLd) }}
       />
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="lg:grid lg:grid-cols-3 lg:gap-8">
-          {/* Main content — 2/3 width on lg+ */}
-          <div className="lg:col-span-2">
-            <Breadcrumb type={opp.type} title={opp.title} />
-            <MainContent opp={opp} />
+      <div className="pb-24 lg:pb-0">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="lg:grid lg:grid-cols-3 lg:gap-8">
+            {/* Main content — 2/3 width on lg+ */}
+            <div className="lg:col-span-2">
+              <Breadcrumb type={opp.type} title={opp.title} />
+              <MainContent opp={opp} />
+            </div>
+
+            {/* Sidebar — 1/3 width, desktop only */}
+            <aside className="mt-8 hidden lg:mt-0 lg:block">
+              <ApplyCard opp={opp} />
+            </aside>
           </div>
 
-          {/* Sidebar — 1/3 width, desktop only */}
-          <aside className="mt-8 hidden lg:mt-0 lg:block">
+          {/* Mobile: inline apply card below content */}
+          <div className="mt-8 lg:hidden">
             <ApplyCard opp={opp} />
-          </aside>
+          </div>
         </div>
 
-        {/* Mobile: inline apply card below content, above sticky bar */}
-        <div className="mt-8 pb-24 lg:hidden">
-          <ApplyCard opp={opp} />
-        </div>
+        {/* Similar Opportunities */}
+        {similarOpps.length > 0 && (
+          <section className="border-t border-slate-100 bg-slate-50/50">
+            <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+              <h2 className="font-display text-xl font-semibold text-[#1A1A2E]">
+                Similar Opportunities
+              </h2>
+              <SaveButtonBulk>
+                <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                  {similarOpps.map((similar) => (
+                    <OpportunityCard key={similar.id} opportunity={similar} />
+                  ))}
+                </div>
+              </SaveButtonBulk>
+            </div>
+          </section>
+        )}
       </div>
 
       {/* Sticky mobile apply bar */}
