@@ -50,7 +50,7 @@ export function EmailSignup({ variant = 'hero' }: Props) {
   if (variant === 'footer') {
     return (
       <form onSubmit={handleSubmit} noValidate>
-        <div className="flex max-w-sm">
+        <div className="flex max-w-sm flex-wrap gap-2">
           <input
             type="email"
             name="email"
@@ -59,12 +59,12 @@ export function EmailSignup({ variant = 'hero' }: Props) {
             placeholder="your@email.com"
             required
             disabled={status === 'loading' || status === 'success'}
-            className="h-10 flex-1 rounded-l-lg border border-slate-600 bg-slate-800 px-3 text-sm text-white placeholder-slate-400 focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 disabled:opacity-60"
+            className="h-10 min-w-0 flex-1 basis-32 rounded-lg border border-slate-600 bg-slate-800 px-3 text-sm text-white placeholder-slate-400 focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 disabled:opacity-60"
           />
           <button
             type="submit"
             disabled={status === 'loading' || status === 'success'}
-            className="h-10 rounded-r-lg bg-orange-500 px-4 text-sm font-medium text-white transition-colors hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+            className="h-10 shrink-0 rounded-lg bg-orange-500 px-4 text-sm font-medium text-white transition-colors hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {status === 'loading' ? '…' : status === 'success' ? '✓' : 'Subscribe'}
           </button>
