@@ -25,7 +25,6 @@ export const OPPORTUNITY_COLUMNS = [
   'scraped_at',
   'created_at',
   'updated_at',
-  'fts',
 ].join(',');
 
 // ── Shared types ──────────────────────────────────────────────────────────────
