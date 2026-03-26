@@ -17,7 +17,7 @@ export const OPPORTUNITY_COLUMNS = [
   'target_audience',
   'is_fully_funded',
   'deadline',
-  'apply_url',
+  'application_url',
   'source_url',
   'completeness_score',
   'status',
