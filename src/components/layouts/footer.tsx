@@ -22,6 +22,8 @@ const PARTNER_LINKS = [
   { label: 'Feature Your Opportunity', href: '/advertise' },
 ] as const;
 
+const DONATION_URL = 'https://www.zeffy.com/en-US/donation-form/help-young-people-find-life-changing-opportunities';
+
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function FooterBrand() {
@@ -71,11 +73,26 @@ export function Footer() {
   return (
     <footer className="mt-auto bg-[#1A1A2E] text-white">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-6">
           <FooterBrand />
           <FooterColumn title="Browse" links={BROWSE_LINKS} />
           <FooterColumn title="About" links={ABOUT_LINKS} />
           <FooterColumn title="Work With Us" links={PARTNER_LINKS} />
+          <div>
+            <h3 className="text-sm font-semibold text-white">Support Us</h3>
+            <ul className="mt-3 space-y-2">
+              <li>
+                <a
+                  href={DONATION_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-amber-400 transition-colors hover:text-amber-300"
+                >
+                  💛 Support Us
+                </a>
+              </li>
+            </ul>
+          </div>
           <FooterNewsletter />
         </div>
 

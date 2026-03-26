@@ -149,6 +149,25 @@ export default function AboutPage() {
           </li>
         </ul>
       </Body>
+
+      {/* ── Support Us ── */}
+      <SectionHeading>Support Us</SectionHeading>
+      <Body>
+        <p>
+          YouthAtlas is free for everyone. If you believe every young person deserves access to
+          opportunity, consider supporting us.
+        </p>
+      </Body>
+      <div className="mt-6">
+        <a
+          href="https://www.zeffy.com/en-US/donation-form/help-young-people-find-life-changing-opportunities"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block bg-amber-400 hover:bg-amber-500 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+        >
+          💛 Support YouthAtlas
+        </a>
+      </div>
     </div>
   );
 }
