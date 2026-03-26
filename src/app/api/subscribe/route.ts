@@ -73,14 +73,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Call Kit API v3 — add subscriber to account
+  // Call Kit API v3 — subscribe to form
   try {
-    const res = await fetch('https://api.convertkit.com/v3/subscribers', {
+    const res = await fetch('https://api.convertkit.com/v3/forms/9252119/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         api_secret: kitEnv.KIT_API_SECRET,
-        email_address: email,
+        email,
       }),
     });
 
