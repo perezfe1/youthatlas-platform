@@ -8,6 +8,8 @@ export type ResourceCategory = {
   guideCount: number;
 };
 
+export type GuideTag = 'Essential' | 'Popular';
+
 export type ResourceGuide = {
   slug: string;
   category: string;
@@ -15,6 +17,7 @@ export type ResourceGuide = {
   description: string;
   readingMinutes: number;
   publishedAt: string; // ISO date string
+  tag?: GuideTag;
 };
 
 // ── Categories ────────────────────────────────────────────────────────────────
@@ -40,8 +43,7 @@ export const RESOURCE_CATEGORIES: ResourceCategory[] = [
     slug: 'job-searching',
     emoji: '🔍',
     title: 'Job Searching',
-    description:
-      'CVs, cover letters, ATS systems, and remote work strategies.',
+    description: 'CVs, cover letters, ATS systems, and remote work strategies.',
     guideCount: 4,
   },
   {
@@ -70,235 +72,247 @@ export const RESOURCE_CATEGORIES: ResourceCategory[] = [
   },
 ];
 
-// ── Guides (metadata only — no content yet) ───────────────────────────────────
+// ── Guides ────────────────────────────────────────────────────────────────────
 
 export const RESOURCE_GUIDES: ResourceGuide[] = [
-  // interview-tips
+  // ── interview-tips ──
   {
-    slug: 'how-to-prepare-for-a-scholarship-interview',
+    slug: 'how-to-prepare-for-scholarship-interviews',
     category: 'interview-tips',
-    title: 'How to Prepare for a Scholarship Interview',
+    title: 'How to Prepare for Scholarship Interviews',
     description:
-      'A step-by-step framework for researching the panel, crafting your story, and answering tough questions with confidence.',
-    readingMinutes: 6,
-    publishedAt: '2026-03-01',
-  },
-  {
-    slug: 'common-fellowship-interview-questions',
-    category: 'interview-tips',
-    title: 'Common Fellowship Interview Questions (and How to Answer Them)',
-    description:
-      'The 15 questions that come up most often in fellowship interviews — with sample responses and what evaluators actually want to hear.',
-    readingMinutes: 8,
-    publishedAt: '2026-03-05',
-  },
-  {
-    slug: 'virtual-interview-setup-guide',
-    category: 'interview-tips',
-    title: 'The Virtual Interview Setup Guide',
-    description:
-      'Lighting, background, audio, and eye contact tips to make a strong impression on video calls.',
-    readingMinutes: 4,
-    publishedAt: '2026-03-10',
-  },
-  {
-    slug: 'body-language-and-presence-in-interviews',
-    category: 'interview-tips',
-    title: 'Body Language and Presence in Interviews',
-    description:
-      'How posture, pacing, and tone affect how interviewers perceive your confidence and leadership potential.',
+      'A step-by-step guide to researching, rehearsing, and showing up ready for any scholarship interview.',
     readingMinutes: 5,
-    publishedAt: '2026-03-15',
+    publishedAt: '2026-03-25',
+    tag: 'Essential',
+  },
+  {
+    slug: 'virtual-interview-setup',
+    category: 'interview-tips',
+    title: 'Virtual Interview Setup & Etiquette',
+    description:
+      'Nail your Zoom or Teams interview with the right setup, lighting, and presence.',
+    readingMinutes: 4,
+    publishedAt: '2026-03-25',
+  },
+  {
+    slug: 'what-selection-panels-look-for',
+    category: 'interview-tips',
+    title: 'What Selection Panels Actually Look For',
+    description:
+      'Go beyond rehearsed answers — understand the criteria that determine who gets selected.',
+    readingMinutes: 6,
+    publishedAt: '2026-03-25',
+    tag: 'Popular',
+  },
+  {
+    slug: 'star-method-behavioral-questions',
+    category: 'interview-tips',
+    title: 'The STAR Method for Behavioral Questions',
+    description:
+      "A simple framework for answering 'Tell me about a time when...' questions with confidence.",
+    readingMinutes: 4,
+    publishedAt: '2026-03-25',
   },
 
-  // how-to-hustle
+  // ── how-to-hustle ──
   {
-    slug: 'building-a-linkedin-profile-from-scratch',
+    slug: 'cold-emailing-mentors-and-organizations',
     category: 'how-to-hustle',
-    title: 'Building a LinkedIn Profile From Scratch',
+    title: 'Cold Emailing: Reach Mentors & Organizations',
     description:
-      'How to create a compelling LinkedIn profile as a student or early-career professional with limited experience.',
+      "How to write emails that get responses — even when no one knows your name.",
     readingMinutes: 5,
-    publishedAt: '2026-03-01',
+    publishedAt: '2026-03-25',
+    tag: 'Popular',
   },
   {
-    slug: 'how-to-cold-email-mentors-and-professionals',
+    slug: 'linkedin-presence-zero-experience',
     category: 'how-to-hustle',
-    title: 'How to Cold Email Mentors and Professionals',
+    title: 'Building a LinkedIn Presence with Zero Experience',
     description:
-      'Templates and principles for reaching out to people you admire — and actually getting a response.',
-    readingMinutes: 5,
-    publishedAt: '2026-03-05',
-  },
-  {
-    slug: 'personal-brand-for-students',
-    category: 'how-to-hustle',
-    title: 'Personal Brand for Students',
-    description:
-      'How to present yourself online so that opportunities start finding you instead of the other way around.',
+      "You don't need a job title to build a professional presence online.",
     readingMinutes: 6,
-    publishedAt: '2026-03-10',
+    publishedAt: '2026-03-25',
   },
   {
-    slug: 'building-momentum-with-no-connections',
+    slug: 'turning-rejections-into-opportunities',
     category: 'how-to-hustle',
-    title: 'Building Momentum With No Connections',
+    title: 'Turning Rejections into Future Opportunities',
     description:
-      'Practical steps for getting started when you have no network, no resume, and no idea where to begin.',
+      "Every 'no' can become a connection, a lesson, or a better application.",
+    readingMinutes: 4,
+    publishedAt: '2026-03-25',
+  },
+  {
+    slug: 'side-projects-strengthen-applications',
+    category: 'how-to-hustle',
+    title: 'Side Projects That Strengthen Applications',
+    description:
+      'Show initiative with projects that prove you can create, not just consume.',
+    readingMinutes: 5,
+    publishedAt: '2026-03-25',
+    tag: 'Essential',
+  },
+
+  // ── job-searching ──
+  {
+    slug: 'tailor-cv-international-opportunities',
+    category: 'job-searching',
+    title: 'Tailor Your CV for International Opportunities',
+    description:
+      "One CV doesn't fit all — here's how to adapt yours for global roles.",
+    readingMinutes: 6,
+    publishedAt: '2026-03-25',
+    tag: 'Essential',
+  },
+  {
+    slug: 'cover-letter-frameworks',
+    category: 'job-searching',
+    title: 'Cover Letter Frameworks That Work',
+    description:
+      'Stop writing generic cover letters. Use a framework that connects you to the role.',
+    readingMinutes: 5,
+    publishedAt: '2026-03-25',
+    tag: 'Popular',
+  },
+  {
+    slug: 'navigating-applicant-tracking-systems',
+    category: 'job-searching',
+    title: 'Navigating Applicant Tracking Systems',
+    description:
+      "Your application might be filtered out before a human sees it. Here's how to get through.",
+    readingMinutes: 4,
+    publishedAt: '2026-03-25',
+  },
+  {
+    slug: 'remote-job-strategies-emerging-markets',
+    category: 'job-searching',
+    title: 'Remote Job Strategies for Emerging Markets',
+    description:
+      'Land remote roles from anywhere — with strategies built for non-US applicants.',
+    readingMinutes: 5,
+    publishedAt: '2026-03-25',
+  },
+
+  // ── digital-skills ──
+  {
+    slug: 'free-certifications-worth-getting',
+    category: 'digital-skills',
+    title: 'Free Certifications Actually Worth Getting',
+    description:
+      'Not all free certs are created equal. These ones employers and panels recognize.',
+    readingMinutes: 5,
+    publishedAt: '2026-03-25',
+    tag: 'Popular',
+  },
+  {
+    slug: 'portfolio-website-no-code',
+    category: 'digital-skills',
+    title: 'Build a Portfolio Website with No-Code Tools',
+    description:
+      "A personal site makes you memorable. Here's how to build one in an afternoon.",
     readingMinutes: 7,
-    publishedAt: '2026-03-15',
+    publishedAt: '2026-03-25',
+    tag: 'Essential',
+  },
+  {
+    slug: 'ai-tools-productivity',
+    category: 'digital-skills',
+    title: 'AI Tools That Boost Your Productivity',
+    description:
+      "Use AI to work faster without cutting corners — here's what actually helps.",
+    readingMinutes: 5,
+    publishedAt: '2026-03-25',
+  },
+  {
+    slug: 'digital-literacy-modern-job-market',
+    category: 'digital-skills',
+    title: 'Digital Literacy for the Modern Job Market',
+    description:
+      'The baseline digital skills every young professional needs in 2026.',
+    readingMinutes: 4,
+    publishedAt: '2026-03-25',
   },
 
-  // job-searching
+  // ── application-writing ──
   {
-    slug: 'how-to-write-a-cv-that-gets-noticed',
-    category: 'job-searching',
-    title: 'How to Write a CV That Gets Noticed',
-    description:
-      'Format, length, keywords, and the mistakes that get CVs rejected before anyone reads them.',
-    readingMinutes: 6,
-    publishedAt: '2026-03-01',
-  },
-  {
-    slug: 'cover-letter-guide-for-entry-level-roles',
-    category: 'job-searching',
-    title: 'Cover Letter Guide for Entry-Level Roles',
-    description:
-      'A practical formula for writing cover letters that are specific, confident, and actually get read.',
-    readingMinutes: 5,
-    publishedAt: '2026-03-05',
-  },
-  {
-    slug: 'understanding-ats-systems',
-    category: 'job-searching',
-    title: 'Understanding ATS Systems',
-    description:
-      'What applicant tracking systems are, how they filter resumes, and how to write for both machines and humans.',
-    readingMinutes: 5,
-    publishedAt: '2026-03-10',
-  },
-  {
-    slug: 'finding-remote-work-as-a-student',
-    category: 'job-searching',
-    title: 'Finding Remote Work as a Student',
-    description:
-      'The best platforms, job types, and strategies for landing remote roles while still in school.',
-    readingMinutes: 6,
-    publishedAt: '2026-03-15',
-  },
-
-  // digital-skills
-  {
-    slug: 'best-free-certifications-for-students',
-    category: 'digital-skills',
-    title: 'Best Free Certifications for Students in 2026',
-    description:
-      'Google, Meta, HubSpot, Coursera, and more — which free certifications actually add value to your applications.',
-    readingMinutes: 6,
-    publishedAt: '2026-03-01',
-  },
-  {
-    slug: 'how-to-build-a-portfolio-with-no-work-experience',
-    category: 'digital-skills',
-    title: 'How to Build a Portfolio With No Work Experience',
-    description:
-      'Use personal projects, open-source contributions, and volunteer work to build a portfolio that demonstrates real skills.',
-    readingMinutes: 6,
-    publishedAt: '2026-03-05',
-  },
-  {
-    slug: 'ai-tools-for-students-and-job-seekers',
-    category: 'digital-skills',
-    title: 'AI Tools for Students and Job Seekers',
-    description:
-      'How to use ChatGPT, Notion AI, and other tools to research opportunities, draft applications, and manage your search.',
-    readingMinutes: 5,
-    publishedAt: '2026-03-10',
-  },
-  {
-    slug: 'data-skills-every-young-professional-needs',
-    category: 'digital-skills',
-    title: 'Data Skills Every Young Professional Needs',
-    description:
-      'Spreadsheets, SQL basics, and data visualization — the minimum data literacy that sets candidates apart.',
-    readingMinutes: 5,
-    publishedAt: '2026-03-15',
-  },
-
-  // application-writing
-  {
-    slug: 'how-to-write-a-personal-statement',
+    slug: 'winning-scholarship-essay',
     category: 'application-writing',
-    title: 'How to Write a Personal Statement',
+    title: 'How to Write a Winning Scholarship Essay',
     description:
-      'Structure, voice, and the difference between a personal statement that blends in and one that stands out.',
+      "The essay is where you stand out. Here's a framework to write one that does.",
     readingMinutes: 7,
-    publishedAt: '2026-03-01',
+    publishedAt: '2026-03-25',
+    tag: 'Essential',
   },
   {
-    slug: 'writing-scholarship-essays-that-win',
+    slug: 'personal-statement-frameworks',
     category: 'application-writing',
-    title: 'Writing Scholarship Essays That Win',
+    title: 'Personal Statement Frameworks',
     description:
-      'How to answer "Why do you deserve this scholarship?" in a way that is honest, specific, and memorable.',
+      'Three proven structures for writing personal statements that connect.',
     readingMinutes: 6,
-    publishedAt: '2026-03-05',
+    publishedAt: '2026-03-25',
+    tag: 'Popular',
   },
   {
-    slug: 'how-to-ask-for-a-recommendation-letter',
+    slug: 'research-proposal-basics',
     category: 'application-writing',
-    title: 'How to Ask for a Recommendation Letter',
+    title: 'Research Proposal Basics for Fellowships',
     description:
-      'Timing, framing, and what to give your recommender so they can write something genuinely strong.',
+      "Demystify the research proposal — even if you've never written one.",
+    readingMinutes: 5,
+    publishedAt: '2026-03-25',
+  },
+  {
+    slug: 'common-application-mistakes',
+    category: 'application-writing',
+    title: 'Common Application Mistakes to Avoid',
+    description:
+      "Don't lose on technicalities. These mistakes are easy to make and easy to fix.",
     readingMinutes: 4,
-    publishedAt: '2026-03-10',
-  },
-  {
-    slug: 'research-proposals-for-fellowship-applications',
-    category: 'application-writing',
-    title: 'Research Proposals for Fellowship Applications',
-    description:
-      'How to write a research proposal even if you have never done research — structure, scope, and what reviewers look for.',
-    readingMinutes: 7,
-    publishedAt: '2026-03-15',
+    publishedAt: '2026-03-25',
   },
 
-  // opportunity-intel
+  // ── opportunity-intel ──
   {
-    slug: 'understanding-scholarship-vs-fellowship-vs-grant',
+    slug: 'fully-funded-vs-partially-funded',
     category: 'opportunity-intel',
-    title: 'Understanding Scholarship vs. Fellowship vs. Grant',
+    title: 'Fully-Funded vs. Partially-Funded: What It Means',
     description:
-      'What each funding type means, what they pay for, and which ones to prioritize based on your goals.',
+      "Decode funding jargon so you know exactly what you're applying for.",
     readingMinutes: 4,
-    publishedAt: '2026-03-01',
+    publishedAt: '2026-03-25',
+    tag: 'Essential',
   },
   {
-    slug: 'how-to-spot-fake-scholarships',
+    slug: 'how-to-spot-legitimate-opportunity',
     category: 'opportunity-intel',
-    title: 'How to Spot Fake Scholarships',
+    title: 'How to Spot a Legitimate Opportunity',
     description:
-      'Red flags, legitimacy checks, and the official sources you should always verify against.',
-    readingMinutes: 4,
-    publishedAt: '2026-03-05',
-  },
-  {
-    slug: 'application-timeline-planning-guide',
-    category: 'opportunity-intel',
-    title: 'Application Timeline Planning Guide',
-    description:
-      'When to start applying, how to manage multiple deadlines, and how to build a personal opportunity calendar.',
+      "Scams target ambitious young people. Here's how to tell what's real.",
     readingMinutes: 5,
-    publishedAt: '2026-03-10',
+    publishedAt: '2026-03-25',
+    tag: 'Popular',
   },
   {
     slug: 'regional-opportunity-calendars',
     category: 'opportunity-intel',
     title: 'Regional Opportunity Calendars',
     description:
-      'When major scholarships, fellowships, and competitions open by region — Africa, Asia, Latin America, Europe, and more.',
+      'Know when to apply for what — organized by region and deadline season.',
+    readingMinutes: 6,
+    publishedAt: '2026-03-25',
+  },
+  {
+    slug: 'making-the-most-after-you-win',
+    category: 'opportunity-intel',
+    title: 'Making the Most of It After You Win',
+    description:
+      "Getting selected is step one. Here's how to maximize the experience.",
     readingMinutes: 5,
-    publishedAt: '2026-03-15',
+    publishedAt: '2026-03-25',
   },
 ];
 
@@ -319,4 +333,16 @@ export function getGuideBySlug(
   return RESOURCE_GUIDES.find(
     (g) => g.category === categorySlug && g.slug === guideSlug,
   );
+}
+
+export function getPrevNextGuides(
+  categorySlug: string,
+  currentSlug: string,
+): { prev: ResourceGuide | null; next: ResourceGuide | null } {
+  const guides = getGuidesByCategory(categorySlug);
+  const idx = guides.findIndex((g) => g.slug === currentSlug);
+  return {
+    prev: idx > 0 ? (guides[idx - 1] ?? null) : null,
+    next: idx < guides.length - 1 ? (guides[idx + 1] ?? null) : null,
+  };
 }

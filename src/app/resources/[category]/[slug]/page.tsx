@@ -1,10 +1,28 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { MDXRemote } from 'next-mdx-remote/rsc';
 
-import { getCategoryBySlug, getGuideBySlug } from '@/data/resources';
+import {
+  RESOURCE_CATEGORIES,
+  RESOURCE_GUIDES,
+  getCategoryBySlug,
+  getGuideBySlug,
+  getPrevNextGuides,
+} from '@/data/resources';
+import { getGuideContent } from '@/lib/mdx';
+import { FeedbackWidget } from '@/components/resources/feedback-widget';
 
 export const dynamic = 'force-dynamic';
+
+// ── Static params ──────────────────────────────────────────────────────────────
+
+export function generateStaticParams() {
+  return RESOURCE_GUIDES.map((g) => ({
+    category: g.category,
+    slug: g.slug,
+  }));
+}
 
 // ── Metadata ──────────────────────────────────────────────────────────────────
 
@@ -22,6 +40,10 @@ export async function generateMetadata({
   };
 }
 
+// ── MDX prose styles ─────────────────────────────────────────────────────────
+
+const mdxComponents = {};
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function GuidePage({
@@ -33,6 +55,9 @@ export default function GuidePage({
   const guide = getGuideBySlug(params.category, params.slug);
 
   if (!category || !guide) notFound();
+
+  const guideContent = getGuideContent(params.category, params.slug);
+  const { prev, next } = getPrevNextGuides(params.category, params.slug);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
@@ -59,6 +84,20 @@ export default function GuidePage({
           <span>{category.title}</span>
           <span>·</span>
           <span>{guide.readingMinutes} min read</span>
+          {guide.tag && (
+            <>
+              <span>·</span>
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                  guide.tag === 'Essential'
+                    ? 'bg-blue-50 text-blue-700'
+                    : 'bg-violet-50 text-violet-700'
+                }`}
+              >
+                {guide.tag}
+              </span>
+            </>
+          )}
         </div>
         <h1 className="font-display mt-3 text-3xl font-bold text-[#1A1A2E]">
           {guide.title}
@@ -68,25 +107,88 @@ export default function GuidePage({
         </p>
       </div>
 
-      {/* Placeholder content */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-8 text-center">
-        <p className="text-2xl">✍️</p>
-        <p className="mt-3 font-display font-semibold text-[#1A1A2E]">
-          Guide coming soon
+      {/* Guide content */}
+      {guideContent ? (
+        <article className="prose prose-slate max-w-none prose-headings:font-display prose-headings:text-[#1A1A2E] prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-strong:text-[#1A1A2E]">
+          {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+          {/* @ts-ignore — next-mdx-remote RSC is an async server component; TS rejects Promise<ReactElement> in JSX position */}
+          <MDXRemote source={guideContent.content} components={mdxComponents} />
+        </article>
+      ) : (
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-8 text-center">
+          <p className="text-2xl">✍️</p>
+          <p className="mt-3 font-display font-semibold text-[#1A1A2E]">
+            Guide coming soon
+          </p>
+          <p className="mt-2 text-sm text-text-secondary">
+            This guide is being written. Check back soon or{' '}
+            <a
+              href="https://t.me/youthatlas1"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline hover:text-primary-dark"
+            >
+              follow us on Telegram
+            </a>{' '}
+            to be notified when it&apos;s published.
+          </p>
+        </div>
+      )}
+
+      {/* Feedback widget */}
+      {guideContent && (
+        <div className="mt-10">
+          <FeedbackWidget />
+        </div>
+      )}
+
+      {/* Related opportunities placeholder */}
+      <div className="mt-10 rounded-lg border border-slate-200 bg-gradient-to-br from-blue-50 to-violet-50 p-6">
+        <p className="text-sm font-semibold text-[#1A1A2E]">
+          Ready to put this into practice?
         </p>
-        <p className="mt-2 text-sm text-text-secondary">
-          This guide is being written. Check back soon or{' '}
-          <a
-            href="https://t.me/youthatlas1"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary underline hover:text-primary-dark"
-          >
-            follow us on Telegram
-          </a>{' '}
-          to be notified when it&apos;s published.
+        <p className="mt-1 text-sm text-text-secondary">
+          Browse open opportunities that match this guide&apos;s topic.
         </p>
+        <Link
+          href="/opportunities"
+          className="mt-3 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
+        >
+          Browse Opportunities →
+        </Link>
       </div>
+
+      {/* Prev / Next navigation */}
+      {(prev || next) && (
+        <div className="mt-10 flex items-center justify-between gap-4 border-t border-slate-200 pt-8">
+          {prev ? (
+            <Link
+              href={`/resources/${params.category}/${prev.slug}`}
+              className="group flex max-w-[45%] flex-col"
+            >
+              <span className="text-xs text-text-secondary">← Previous</span>
+              <span className="mt-1 text-sm font-medium text-[#1A1A2E] group-hover:text-primary transition-colors">
+                {prev.title}
+              </span>
+            </Link>
+          ) : (
+            <div />
+          )}
+          {next ? (
+            <Link
+              href={`/resources/${params.category}/${next.slug}`}
+              className="group flex max-w-[45%] flex-col text-right"
+            >
+              <span className="text-xs text-text-secondary">Next →</span>
+              <span className="mt-1 text-sm font-medium text-[#1A1A2E] group-hover:text-primary transition-colors">
+                {next.title}
+              </span>
+            </Link>
+          ) : (
+            <div />
+          )}
+        </div>
+      )}
 
       {/* Back link */}
       <div className="mt-8">
