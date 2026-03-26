@@ -2,6 +2,32 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { PAGINATION } from '@/config/constants';
 import type { Opportunity, OpportunityFilters, AppError, Result } from '@/types/opportunity';
 
+// ── Column list ───────────────────────────────────────────────────────────────
+// Never select('*') on opportunities — the embedding column is vector(1536) ≈ 6 KB/row.
+// Import this constant in other service files that query the opportunities table.
+export const OPPORTUNITY_COLUMNS = [
+  'id',
+  'slug',
+  'title',
+  'description',
+  'summary',
+  'type',
+  'organization',
+  'regions',
+  'target_audience',
+  'is_fully_funded',
+  'deadline',
+  'apply_url',
+  'source_url',
+  'completeness_score',
+  'status',
+  'source_site',
+  'scraped_at',
+  'created_at',
+  'updated_at',
+  'fts',
+].join(',');
+
 // ── Shared types ──────────────────────────────────────────────────────────────
 
 type OpportunitiesResult = Result<{ opportunities: Opportunity[]; count: number }>;
@@ -32,7 +58,7 @@ export async function getOpportunities(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let q: any = supabase
       .from('opportunities')
-      .select('*', { count: 'exact' })
+      .select(OPPORTUNITY_COLUMNS, { count: 'exact' })
       .eq('status', 'active');
 
     // Hide expired by default — only show upcoming or rolling deadlines
@@ -78,7 +104,7 @@ async function getOpportunitiesIlikeFallback(filters: OpportunityFilters): Promi
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let q: any = supabase
       .from('opportunities')
-      .select('*', { count: 'exact' })
+      .select(OPPORTUNITY_COLUMNS, { count: 'exact' })
       .eq('status', 'active')
       .ilike('title', `%${filters.search_query ?? ''}%`);
 
@@ -114,7 +140,7 @@ export async function getOpportunityBySlug(slug: string): Promise<Result<Opportu
     const supabase = await createServerSupabaseClient();
     const { data, error } = await supabase
       .from('opportunities')
-      .select('*')
+      .select(OPPORTUNITY_COLUMNS)
       .eq('slug', slug)
       .eq('status', 'active')
       .limit(1)
@@ -135,7 +161,7 @@ export async function getFeaturedOpportunities(limit = 6): Promise<Result<Opport
 
     const { data, error } = await supabase
       .from('opportunities')
-      .select('*')
+      .select(OPPORTUNITY_COLUMNS)
       .eq('status', 'active')
       .gte('deadline', today)
       .order('completeness_score', { ascending: false })
@@ -166,7 +192,7 @@ export async function getRecommendedOpportunities(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let q: any = supabase
       .from('opportunities')
-      .select('*')
+      .select(OPPORTUNITY_COLUMNS)
       .eq('status', 'active')
       .or(`deadline.is.null,deadline.gte.${today}`);
 
@@ -250,7 +276,7 @@ export async function getSimilarOpportunities(
     // Step 3: Fetch full opportunity records
     const { data: opps, error: oppsErr } = await supabase
       .from('opportunities')
-      .select('*')
+      .select(OPPORTUNITY_COLUMNS)
       .in('slug', slugs)
       .eq('status', 'active');
 

@@ -2,6 +2,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { generateEmbedding } from '@/lib/openai';
 import { SEARCH, PAGINATION } from '@/config/constants';
 import type { Opportunity, AppError, Result } from '@/types/opportunity';
+import { OPPORTUNITY_COLUMNS } from '@/services/opportunity-service';
 
 type SearchResult = Result<{ opportunities: Opportunity[]; count: number }>;
 
@@ -46,7 +47,7 @@ export async function searchOpportunities(query: string, page = 1): Promise<Sear
 
         const { data: fullData, error: fullError } = await supabase
           .from('opportunities')
-          .select('*')
+          .select(OPPORTUNITY_COLUMNS)
           .in('slug', slugs)
           .eq('status', 'active');
 
@@ -72,7 +73,7 @@ export async function searchOpportunities(query: string, page = 1): Promise<Sear
 
     const { data: ftsData, error: ftsError, count: ftsCount } = await supabase
       .from('opportunities')
-      .select('*', { count: 'exact' })
+      .select(OPPORTUNITY_COLUMNS, { count: 'exact' })
       .eq('status', 'active')
       .textSearch('fts', trimmed, { type: 'websearch' })
       .order('deadline', { ascending: true, nullsFirst: false })
@@ -91,7 +92,7 @@ export async function searchOpportunities(query: string, page = 1): Promise<Sear
     const safe = trimmed.replace(/'/g, "''");
     const { data, error, count } = await supabase
       .from('opportunities')
-      .select('*', { count: 'exact' })
+      .select(OPPORTUNITY_COLUMNS, { count: 'exact' })
       .eq('status', 'active')
       .or(`title.ilike.%${safe}%,description.ilike.%${safe}%,organization.ilike.%${safe}%`)
       .order('deadline', { ascending: true, nullsFirst: false })

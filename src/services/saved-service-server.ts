@@ -1,5 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import type { Opportunity, AppError, Result } from '@/types/opportunity';
+import { OPPORTUNITY_COLUMNS } from '@/services/opportunity-service';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -44,7 +45,7 @@ export async function getSavedOpportunities(
     // Step 2: fetch full opportunity records for those IDs
     const { data: opps, error: oppsError } = await supabase
       .from('opportunities')
-      .select('*')
+      .select(OPPORTUNITY_COLUMNS)
       .in('id', ids);
 
     if (oppsError) return dbError(oppsError.message);
