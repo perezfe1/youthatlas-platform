@@ -55,13 +55,13 @@ export async function searchOpportunities(query: string, page = 1): Promise<Sear
           // Re-sort by similarity score (slug fetch doesn't preserve RPC order)
           const simMap = new Map<string, number>(rpcRaw.map((r) => [r.slug, r.similarity]));
           const sorted = [...fullData].sort((a, b) => {
-            const aSlug = (a as { slug: string }).slug;
-            const bSlug = (b as { slug: string }).slug;
+            const aSlug = (a as unknown as { slug: string }).slug;
+            const bSlug = (b as unknown as { slug: string }).slug;
             return (simMap.get(bSlug) ?? 0) - (simMap.get(aSlug) ?? 0);
           });
 
           return {
-            data: { opportunities: sorted as Opportunity[], count: sorted.length },
+            data: { opportunities: sorted as unknown as Opportunity[], count: sorted.length },
             error: null,
           };
         }
@@ -81,7 +81,7 @@ export async function searchOpportunities(query: string, page = 1): Promise<Sear
 
     if (!ftsError) {
       return {
-        data: { opportunities: (ftsData ?? []) as Opportunity[], count: ftsCount ?? 0 },
+        data: { opportunities: (ftsData ?? []) as unknown as Opportunity[], count: ftsCount ?? 0 },
         error: null,
       };
     }
@@ -100,7 +100,7 @@ export async function searchOpportunities(query: string, page = 1): Promise<Sear
 
     if (error) return dbError('DB_ERROR', error.message);
     return {
-      data: { opportunities: (data ?? []) as Opportunity[], count: count ?? 0 },
+      data: { opportunities: (data ?? []) as unknown as Opportunity[], count: count ?? 0 },
       error: null,
     };
   } catch (err) {

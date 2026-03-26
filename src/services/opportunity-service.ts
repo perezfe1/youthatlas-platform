@@ -148,7 +148,7 @@ export async function getOpportunityBySlug(slug: string): Promise<Result<Opportu
 
     if (error) return dbError('DB_ERROR', error.message);
     if (!data) return dbError('NOT_FOUND', `Opportunity not found: ${slug}`);
-    return { data: data as Opportunity, error: null };
+    return { data: data as unknown as Opportunity, error: null };
   } catch (err) {
     return dbError('UNEXPECTED', err instanceof Error ? err.message : String(err));
   }
@@ -169,7 +169,7 @@ export async function getFeaturedOpportunities(limit = 6): Promise<Result<Opport
       .limit(limit);
 
     if (error) return dbError('DB_ERROR', error.message);
-    return { data: (data ?? []) as Opportunity[], error: null };
+    return { data: (data ?? []) as unknown as Opportunity[], error: null };
   } catch (err) {
     return dbError('UNEXPECTED', err instanceof Error ? err.message : String(err));
   }
@@ -216,7 +216,7 @@ export async function getRecommendedOpportunities(
       .limit(limit);
 
     if (error) return dbError('DB_ERROR', error.message);
-    return { data: (data ?? []) as Opportunity[], error: null };
+    return { data: (data ?? []) as unknown as Opportunity[], error: null };
   } catch (err) {
     return dbError('UNEXPECTED', err instanceof Error ? err.message : String(err));
   }
@@ -285,12 +285,12 @@ export async function getSimilarOpportunities(
     // Re-sort by similarity (slug fetch doesn't preserve RPC order)
     const simMap = new Map(rpcRaw.map((r) => [r.slug, r.similarity]));
     const sorted = [...(opps ?? [])].sort((a, b) => {
-      const aSlug = (a as { slug: string }).slug;
-      const bSlug = (b as { slug: string }).slug;
+      const aSlug = (a as unknown as { slug: string }).slug;
+      const bSlug = (b as unknown as { slug: string }).slug;
       return (simMap.get(bSlug) ?? 0) - (simMap.get(aSlug) ?? 0);
     });
 
-    return { data: sorted as Opportunity[], error: null };
+    return { data: sorted as unknown as Opportunity[], error: null };
   } catch {
     // Never break the detail page — graceful empty fallback
     return { data: [], error: null };

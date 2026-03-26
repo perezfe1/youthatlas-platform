@@ -52,7 +52,7 @@ export async function getSavedOpportunities(
 
     // Re-sort to match saved_at order from step 1
     const oppMap = new Map(
-      (opps ?? []).map((o) => [(o as Opportunity).id, o as Opportunity]),
+      (opps ?? []).map((o) => [(o as unknown as Opportunity).id, o as unknown as Opportunity]),
     );
     const ordered = ids
       .map((id) => oppMap.get(id))
