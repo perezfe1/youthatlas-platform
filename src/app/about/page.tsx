@@ -31,6 +31,7 @@ export default function AboutPage() {
       <p className="mt-6 text-slate-600 leading-relaxed">
         YouthAtlas is a free platform that aggregates scholarships, fellowships, internships, grants,
         competitions, and other opportunities for young people — all in one searchable, organized place.
+        We index 600+ opportunities from trusted sources around the world, updated every single day.
       </p>
 
       {/* ── The Problem ── */}
@@ -43,7 +44,7 @@ export default function AboutPage() {
         </p>
         <p>
           Most students and young professionals never hear about the best opportunities simply because
-          they don&apos;t know where to look — or don&apos;t have time to search every source every week.
+          they don&apos;t know where to look, or don&apos;t have the time to search every source every week.
         </p>
       </Body>
 
@@ -54,9 +55,6 @@ export default function AboutPage() {
           YouthAtlas automatically discovers and indexes opportunities from across the web, presenting
           them in a clean, searchable format. Filter by type, region, funding status, or deadline.
           Bookmark the ones you care about. Get the best ones delivered to your inbox weekly.
-        </p>
-        <p>
-          Everything on YouthAtlas is free. No paywalls, no premium tiers, no sponsored listings.
         </p>
       </Body>
 
@@ -75,6 +73,11 @@ export default function AboutPage() {
           <li>
             <strong className="text-slate-800">Browse and filter</strong> by opportunity type,
             region, funding status, and deadline directly on the platform.
+          </li>
+          <li>
+            <strong className="text-slate-800">Semantic search</strong> understands what you mean,
+            not just what you type — search &ldquo;climate funding&rdquo; and find environment,
+            sustainability, and conservation opportunities too.
           </li>
           <li>
             <strong className="text-slate-800">Telegram channel</strong> (
@@ -99,13 +102,13 @@ export default function AboutPage() {
       <SectionHeading>Who We Are</SectionHeading>
       <Body>
         <p>
-          YouthAtlas is an independent project built and maintained by a small team passionate about
-          making opportunity access more equitable. We are not affiliated with any university,
-          government body, or funding organization.
+          YouthAtlas is an independent project built by Federico Perez, a graduate student and
+          developer passionate about making opportunity access more equitable. We are not affiliated
+          with any university, government body, or funding organization.
         </p>
         <p>
-          We believe that where you grow up or who you know shouldn&apos;t determine which
-          opportunities you find out about. YouthAtlas exists to level that playing field.
+          We believe that where you grow up or who you know should not determine which opportunities
+          you find out about. YouthAtlas exists to level that playing field.
         </p>
       </Body>
 
@@ -114,27 +117,8 @@ export default function AboutPage() {
       <Body>
         <ul className="list-disc pl-5 space-y-2">
           <li>
-            <strong className="text-slate-800">Join our Telegram channel</strong> —{' '}
-            <a
-              href="https://t.me/youthatlas1"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-500 hover:text-blue-600 underline"
-            >
-              @youthatlas1
-            </a>{' '}
-            for daily opportunity updates.
-          </li>
-          <li>
-            <strong className="text-slate-800">Subscribe to our newsletter</strong> — get the
-            weekly digest delivered every Monday.{' '}
-            <a href="/#newsletter" className="text-blue-500 hover:text-blue-600 underline">
-              Sign up on the homepage.
-            </a>
-          </li>
-          <li>
             <strong className="text-slate-800">Share with a friend</strong> — if YouthAtlas has
-            helped you find an opportunity, pass it on.
+            helped you find an opportunity, pass it on. That is the most powerful thing you can do.
           </li>
           <li>
             <strong className="text-slate-800">Get in touch</strong> — have a suggestion, found an
@@ -147,6 +131,14 @@ export default function AboutPage() {
             </a>
             .
           </li>
+          <li>
+            <strong className="text-slate-800">Feature your opportunity</strong> — are you an
+            organization with an opportunity for young people? Get in front of thousands of motivated
+            applicants.{' '}
+            <a href="/advertise" className="text-blue-500 hover:text-blue-600 underline">
+              Learn more at youthatlas.com/advertise.
+            </a>
+          </li>
         </ul>
       </Body>
 
@@ -154,8 +146,9 @@ export default function AboutPage() {
       <SectionHeading>Support Us</SectionHeading>
       <Body>
         <p>
-          YouthAtlas is free for everyone. If you believe every young person deserves access to
-          opportunity, consider supporting us.
+          Building and maintaining YouthAtlas takes real resources. If this platform has ever helped
+          you or someone you know, consider making a contribution. Every dollar keeps it free for the
+          next person.
         </p>
       </Body>
       <div className="mt-6">
