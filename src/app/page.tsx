@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
 
 const TYPE_EMOJI: Record<string, string> = {
   scholarship: '🎓', fellowship: '🤝', grant: '💰', internship: '💼',
-  conference: '🎤', competition: '🏆', training: '📚', job: '👔',
+  conference: '🎤', competition: '🏆', training: '📚',
 };
 
 const TYPE_SLUG: Record<string, string> = {
@@ -25,7 +25,6 @@ const TYPE_SLUG: Record<string, string> = {
   conference: '/conferences',
   competition: '/competitions',
   training: '/training',
-  job: '/jobs',
 };
 
 // ── Section: Hero ─────────────────────────────────────────────────────────────

@@ -11,7 +11,6 @@ export const TYPE_SLUG_MAP: Record<string, OpportunityType> = {
   conferences:  'conference',
   competitions: 'competition',
   training:     'training',
-  jobs:         'job',
 } as const;
 
 /** URL slug → Region DB value */
@@ -111,15 +110,6 @@ const TYPE_SEO: Record<string, TypeSeoData> = {
     h1: 'Training Programs for Youth',
     introTemplate:
       'Browse {count} training programs and professional development opportunities worldwide.',
-  },
-  jobs: {
-    pluralLabel: 'Jobs',
-    metaTitle: 'Entry-Level Jobs & Graduate Programs 2025–2026 — YouthAtlas',
-    metaDescription:
-      'Find entry-level jobs and graduate programs at international organizations, NGOs, and global companies.',
-    h1: 'Jobs & Graduate Programs',
-    introTemplate:
-      'Browse {count} entry-level jobs and graduate programs at organizations worldwide.',
   },
 };
 

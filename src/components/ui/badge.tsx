@@ -14,7 +14,6 @@ const TYPE_CLASSES: Record<OpportunityType, BadgeClasses> = {
   conference:  { bg: 'bg-teal-100',   text: 'text-teal-800',   border: 'border-teal-200' },
   competition: { bg: 'bg-rose-100',   text: 'text-rose-800',   border: 'border-rose-200' },
   training:    { bg: 'bg-indigo-100', text: 'text-indigo-800', border: 'border-indigo-200' },
-  job:         { bg: 'bg-orange-100', text: 'text-orange-800', border: 'border-orange-200' },
 };
 
 type OpportunityBadgeProps = {
