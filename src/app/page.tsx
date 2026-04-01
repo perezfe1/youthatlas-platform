@@ -226,7 +226,7 @@ export default async function HomePage() {
   ]);
 
   const totalCount = countResult.data?.count ?? 0;
-  const types = typesResult.data ?? [];
+  const types = (typesResult.data ?? []).filter((t) => t.type !== 'job');
   const featured = featuredResult.data ?? [];
   const user = authResult.data?.user ?? null;
 
