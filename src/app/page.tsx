@@ -4,7 +4,7 @@ import { OpportunityCard } from '@/components/features/opportunity-card';
 import { SaveButtonBulk } from '@/components/features/save-button-bulk';
 import { EmailSignup } from '@/components/features/email-signup';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { getOpportunities, getFeaturedOpportunities, getOpportunityTypes, getRecommendedOpportunities } from '@/services/opportunity-service';
+import { getOpportunityCount, getFeaturedOpportunities, getOpportunityTypes, getRecommendedOpportunities } from '@/services/opportunity-service';
 import { getProfile } from '@/services/profile-service';
 import type { Opportunity } from '@/types/opportunity';
 
@@ -37,7 +37,7 @@ function SearchIcon() {
   );
 }
 
-function HeroSection({ totalCount }: { totalCount: number }) {
+function HeroSection({ displayCount }: { displayCount: string }) {
   return (
     <section className="bg-gradient-to-br from-blue-50 via-white to-violet-50 py-12 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
@@ -48,7 +48,7 @@ function HeroSection({ totalCount }: { totalCount: number }) {
           Scholarships, fellowships, grants, internships and more — aggregated from 50+ sources worldwide.
         </p>
         <p className="mt-6 text-sm text-text-secondary">
-          Browse {totalCount.toLocaleString()}+ opportunities updated daily. Get notified via{' '}
+          Browse {displayCount} opportunities updated daily. Get notified via{' '}
           <a
             href="https://t.me/youthatlas1"
             target="_blank"
@@ -219,13 +219,16 @@ export default async function HomePage() {
   const supabase = await createServerSupabaseClient();
 
   const [countResult, typesResult, featuredResult, authResult] = await Promise.all([
-    getOpportunities({ page: 1, page_size: 1 }),
+    getOpportunityCount(),
     getOpportunityTypes(),
     getFeaturedOpportunities(6),
     supabase.auth.getUser(),
   ]);
 
-  const totalCount = countResult.data?.count ?? 0;
+  const rawCount = countResult.data ?? 0;
+  const displayCount = rawCount > 0
+    ? `${(Math.floor(rawCount / 50) * 50).toLocaleString()}+`
+    : 'thousands of';
   const types = (typesResult.data ?? []).filter((t) => t.type !== 'job');
   const featured = featuredResult.data ?? [];
   const user = authResult.data?.user ?? null;
@@ -250,7 +253,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <HeroSection totalCount={totalCount} />
+      <HeroSection displayCount={displayCount} />
       <TypeGridSection types={types} />
       {forYouOpps.length > 0 && <ForYouSection opportunities={forYouOpps} />}
       <FeaturedSection opportunities={featured} />

@@ -300,6 +300,21 @@ export async function getSimilarOpportunities(
   }
 }
 
+export async function getOpportunityCount(): Promise<Result<number>> {
+  try {
+    const supabase = await createServerSupabaseClient();
+    const { count, error } = await supabase
+      .from('opportunities')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'active');
+
+    if (error) return dbError('DB_ERROR', error.message);
+    return { data: count ?? 0, error: null };
+  } catch (err) {
+    return dbError('UNEXPECTED', err instanceof Error ? err.message : String(err));
+  }
+}
+
 export async function getOpportunityTypes(): Promise<Result<TypeCount[]>> {
   try {
     const supabase = await createServerSupabaseClient();
