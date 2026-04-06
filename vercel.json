@@ -1,17 +1,1 @@
-{
-  "rateLimit": {
-    "window": "1m",
-    "limit": 60,
-    "action": "deny",
-    "paths": [
-      "/opportunities",
-      "/scholarships",
-      "/fellowships",
-      "/grants",
-      "/internships",
-      "/conferences",
-      "/competitions",
-      "/training"
-    ]
-  }
-}
+{}
