@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'About | YouthAtlas',
   description:
-    'Learn about YouthAtlas, a free platform that aggregates scholarships, fellowships, internships, grants, and more for young people worldwide.',
+    'Learn about YouthAtlas, a project of Prospera Development Foundation (501(c)(3)), aggregating scholarships, fellowships, internships, and more for young people worldwide.',
 };
 
 // ── Shared prose helpers ───────────────────────────────────────────────────────
@@ -22,6 +22,30 @@ function Body({ children }: { children: React.ReactNode }) {
   return <div className="space-y-4 text-slate-600 leading-relaxed">{children}</div>;
 }
 
+// ── Impact Stats ─────────────────────────────────────────────────────────────
+
+function ImpactStats() {
+  const stats = [
+    { value: '800+', label: 'Opportunities indexed' },
+    { value: 'Daily', label: 'New opportunities added' },
+    { value: 'Free', label: 'Always, for every user' },
+  ];
+
+  return (
+    <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-3">
+      {stats.map((stat) => (
+        <div
+          key={stat.label}
+          className="rounded-xl border border-slate-100 bg-white p-6 text-center shadow-sm"
+        >
+          <p className="text-3xl font-bold text-blue-600">{stat.value}</p>
+          <p className="mt-1 text-sm text-slate-500">{stat.label}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AboutPage() {
@@ -29,9 +53,13 @@ export default function AboutPage() {
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
       <h1 className="font-display text-3xl font-bold text-[#1A1A2E]">About YouthAtlas</h1>
       <p className="mt-6 text-slate-600 leading-relaxed">
-        YouthAtlas is a free platform that aggregates scholarships, fellowships, internships, grants,
-        competitions, and other opportunities for young people, all in one searchable, organized place.
-        We index 600+ opportunities from trusted sources around the world, updated every single day.
+        Prospera Development Foundation is a registered 501(c)(3) nonprofit organization
+        (EIN: 92-3630661) that believes every young person deserves equal access to life-changing
+        opportunities &mdash; regardless of where they were born or who they know. YouthAtlas is our
+        flagship program: a free platform that aggregates scholarships, fellowships, internships,
+        grants, competitions, and other opportunities for young people, all in one searchable,
+        organized place. We index 800+ opportunities from trusted sources around the world, updated
+        every single day.
       </p>
 
       {/* ── The Problem ── */}
@@ -113,6 +141,10 @@ export default function AboutPage() {
         </p>
       </Body>
 
+      {/* ── Our Impact ── */}
+      <SectionHeading>Our Impact</SectionHeading>
+      <ImpactStats />
+
       {/* ── Get Involved ── */}
       <SectionHeading>Get Involved</SectionHeading>
       <Body>
@@ -120,6 +152,19 @@ export default function AboutPage() {
           <li>
             <strong className="text-slate-800">Share with a friend:</strong> if YouthAtlas has
             helped you find an opportunity, pass it on. That is the most powerful thing you can do.
+          </li>
+          <li>
+            <strong className="text-slate-800">Follow our Telegram channel:</strong> join 1,000+
+            young people getting daily opportunity alerts at{' '}
+            <a
+              href="https://t.me/youthatlas1"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:text-blue-600 underline"
+            >
+              t.me/youthatlas1
+            </a>
+            .
           </li>
           <li>
             <strong className="text-slate-800">Get in touch:</strong> have a suggestion, found an
@@ -151,6 +196,11 @@ export default function AboutPage() {
           you or someone you know, consider making a contribution. Every dollar keeps it free for the
           next person.
         </p>
+        <p>
+          Donations are processed securely through Zeffy, our trusted nonprofit donation partner.
+          Prospera Development Foundation is a registered 501(c)(3) &mdash; your donation may be
+          tax-deductible.
+        </p>
       </Body>
       <div className="mt-6">
         <a
@@ -159,7 +209,7 @@ export default function AboutPage() {
           rel="noopener noreferrer"
           className="inline-block bg-amber-400 hover:bg-amber-500 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
         >
-          💛 Support YouthAtlas
+          Support YouthAtlas
         </a>
       </div>
     </div>

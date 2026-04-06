@@ -14,6 +14,8 @@ const BROWSE_LINKS = [
 
 const ABOUT_LINKS = [
   { label: 'About', href: '/about' },
+  { label: 'Contact', href: '/contact' },
+  { label: 'News', href: '/news' },
   { label: 'Privacy Policy', href: '/privacy' },
   { label: 'Terms of Service', href: '/terms' },
 ] as const;
@@ -99,6 +101,9 @@ export function Footer() {
         <div className="mt-10 border-t border-slate-700 pt-6">
           <p className="text-center text-sm text-slate-400">
             &copy; 2026 YouthAtlas. All rights reserved.
+          </p>
+          <p className="mt-2 text-center text-xs text-slate-400">
+            YouthAtlas is a project of Prospera Development Foundation, a registered 501(c)(3) nonprofit &middot; EIN: 92-3630661
           </p>
         </div>
       </div>
