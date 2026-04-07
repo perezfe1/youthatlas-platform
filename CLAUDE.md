@@ -10,50 +10,23 @@ User-facing Next.js app for browsing youth opportunities (scholarships, fellowsh
 
 ## Project Status
 
-### Phase 0 — Database & Infrastructure (COMPLETE)
-All 5 modules done: Supabase schema, 10 migrations (tables, indexes, full-text search, RLS, triggers), shared types, env validation.
-
-### Phase 1 — Scraper Pipeline (COMPLETE)
-All 9 modules done. 5 scrapers (YouthOp, OFY, OpDesk, AfterSchool, ScholAds) feeding 290+ opportunities into Supabase. Daily automated pipeline via GitHub Actions with Telegram health monitoring.
-
-### Phase 2 — Web Platform (COMPLETE)
-All 10 modules done, plus usability fixes:
-
-| Module | Status |
-|--------|--------|
-| 2.1 Service layer + design system | DONE |
-| 2.2 Homepage + browse/list page | DONE |
-| 2.3 Filters (type, region, funding) | DONE |
-| 2.4 Opportunity detail page | DONE |
-| 2.5 Search (debounced, URL-driven) | DONE |
-| 2.6 Auth (magic link OTP) | DONE |
-| 2.7 Save / bookmarks | DONE |
-| 2.8 User Dashboard (/dashboard: saved list + profile settings, auth-gated) | DONE |
-| 2.9 SEO Programmatic Pages (/scholarships, /fellowships/africa, sitemap.xml) | DONE |
-| 2.10 Mobile Responsive Pass (polish all pages at 375px) | DONE |
-
-### Phase 3 — Distribution (COMPLETE)
-| Feature | Status |
-|---------|--------|
-| Telegram auto-posting (`distribute-telegram.yml`, daily after ingest) | DONE |
-| Email newsletter signup (Kit/ConvertKit API, `/api/subscribe`) | DONE |
-| Weekly email digest (`weekly-digest.yml`, Monday 8AM UTC, Kit broadcast) | DONE |
-
-### Phase 4 — Content & Polish (IN PROGRESS)
-| Module | Status |
-|--------|--------|
-| 4.1 Legal pages (Privacy Policy `/privacy`, Terms of Service `/terms`) | DONE |
-| 4.2 About page (`/about`) | DONE |
-| 4.3 Homepage polish (SEO type links, Telegram/email subheadline) | DONE |
-| 4.4 CLAUDE.md update | DONE |
-| 4.5 JSON-LD structured data + llms.txt + AI bot rules | TODO |
+### All Phases Complete (as of April 7, 2026)
+- Phase 0: Database & Infrastructure
+- Phase 1: Scraper Pipeline (5 scrapers, Gemini extraction)
+- Phase 2: Web Platform (services, pages, auth, search, SEO)
+- Phase 3: Distribution (Telegram, email digest, Kit)
+- Phase 4: Launch Prep (security, rate limiting, legal pages)
+- Phase 5: Post-Launch Features (pgvector search, deadline reminders, OG images, featured listings, admin dashboard, GA4, Sentry)
+- Phase 6: Google Ad Grants Compliance (contact page, news page, EIN/nonprofit content, nav updates)
 
 ## Tech Stack
 
-- Next.js 14 (App Router) / TypeScript (strict) / Tailwind CSS
-- Supabase (Postgres + Auth + Edge Functions)
+- Next.js 14.2.35 (App Router) / TypeScript (strict) / Tailwind CSS
+- Supabase (Postgres + Auth + pgvector)
 - Kit (ConvertKit) — email newsletter (API v3 broadcasts, API v4 subscribers)
-- Deployed on Vercel
+- Resend — transactional email (deadline reminders)
+- OpenAI — embeddings only (`text-embedding-3-small`, 1536 dims)
+- Deployed on Vercel Pro
 
 ## Distribution Channels
 
@@ -65,16 +38,18 @@ All 10 modules done, plus usability fixes:
 
 | Workflow | Schedule | Purpose |
 |----------|----------|---------|
-| `ingest.yml` ("Daily Ingest Pipeline") | Daily at 6AM UTC | Scrape + store opportunities |
-| `distribute-telegram.yml` | Triggered by ingest | Post new opportunities to Telegram |
-| `weekly-digest.yml` ("Weekly Email Digest") | Monday 8AM UTC | Send Kit broadcast email |
+| `ingest.yml` | Daily at 4AM UTC | Scrape + store opportunities (parallel matrix) |
+| `distribute-telegram.yml` | After ingest | Post new opportunities to Telegram |
+| `weekly-digest.yml` | Monday 8AM UTC | Send Kit broadcast email |
+| `deadline-reminders.yml` | Daily 10AM UTC | Email users with upcoming deadlines |
+| `type-check.yml` | On push/PR | TypeScript validation |
 
 ## Design System
 
 - **Fonts:** Outfit (display/headings, `font-display`) + Inter (body, `font-body`) — loaded via `next/font/google`
-- **Background:** Warm off-white `#FFFBF5` (HSL 40 100% 99%)
-- **Color tokens:** Semantic CSS custom properties consumed as `hsl(var(--token))` in `tailwind.config.ts` — `background`, `surface`, `text-primary`, `text-secondary`, `border`, `primary`, `primary-dark`, `accent-warm`, `accent-purple`
-- **Dark mode:** `darkMode: 'class'` ready, tokens defined in `globals.css` under `.dark`
+- **Background:** Warm off-white `#FFFBF5`
+- **Color tokens:** Semantic CSS custom properties in `globals.css` — `background`, `surface`, `text-primary`, `text-secondary`, `border`, `primary`, `primary-dark`, `accent-warm`, `accent-purple`
+- **Type badges:** scholarship→blue, fellowship→violet, grant→emerald, internship→amber, conference→teal, competition→rose, training→indigo
 
 ## Architecture Rules — FOLLOW THESE ALWAYS
 
@@ -84,14 +59,20 @@ All 10 modules done, plus usability fixes:
 4. **Named exports only** (except `page.tsx` and `layout.tsx` which Next.js requires as default).
 5. **Env vars are validated via Zod** in `src/config/env.ts`. Never use raw `process.env`.
 6. **One concern per file.** If a file does 2+ things, split it.
+7. **Next.js page.tsx can only export specific fields** (default, metadata, dynamic, generateMetadata, generateStaticParams). Shared data must live in `src/data/` files.
 
 ## Gotchas — READ BEFORE CODING
 
 - **`force-dynamic` on all pages.** Every `page.tsx` must export `export const dynamic = 'force-dynamic'` — Supabase queries use cookies/headers which break static generation.
-- **Claude model string:** The scrapers use `claude-haiku-4-5-20251001` (the old `claude-3-5-haiku` was retired). Always use this exact model ID.
-- **Telegram env var:** The correct env var is `TELEGRAM_CHANNEL_ID`, NOT `TELEGRAM_CHAT_ID`. Using the wrong name silently fails.
-- **Kit API versions:** Use v3 (`api.convertkit.com/v3`) for broadcasts/subscribers add. Use v4 (`api.kit.com/v4`) for subscriber listing with cursor pagination.
-- **Kit broadcast = draft.** `POST /v3/broadcasts` creates a draft only — must be reviewed and published in the Kit dashboard.
+- **Never `select('*')` on opportunities table.** The `embedding` column is 6KB/row and `fts` is not selectable via PostgREST (42703 error). Always use explicit column lists.
+- **Telegram env var:** `TELEGRAM_CHANNEL_ID` (admin) ≠ `TELEGRAM_PUBLIC_CHANNEL_ID` (public). Using the wrong one silently fails.
+- **Kit API versions:** Use v3 (`api.convertkit.com/v3`) for broadcasts. Use v4 (`api.kit.com/v4`) for subscriber listing.
+- **Kit broadcast = draft.** `POST /v3/broadcasts` creates a draft only — must publish in Kit dashboard.
+- **`pnpm build` hangs locally.** Never run it. Use `force-dynamic` on all data pages.
+- **`vercel.json` does not support `rateLimit`.** Rate limiting is handled by Next.js middleware.
+- **featured_listings insert:** Do NOT chain `.select().single()` — causes RLS violation.
+- **Extraction model:** Google Gemini 2.5 Flash (NOT OpenAI, NOT Claude). OpenAI is embeddings only.
+- **'job' type removed.** Do not re-add anywhere. Scrapers auto-map job → internship.
 
 ## No-Touch Files (never modify without explicit instruction)
 
@@ -102,33 +83,34 @@ All 10 modules done, plus usability fixes:
 ## Key Files
 
 ### Platform (this repo)
-- `src/types/opportunity.ts` — `Opportunity` interface + all enum types (source of truth, shared with scrapers repo)
+- `src/types/opportunity.ts` — `Opportunity` interface + all enum types (shared with scrapers repo)
 - `src/services/opportunity-service.ts` — all Supabase queries
 - `src/services/search-service.ts` — search/filter logic
 - `src/config/constants.ts` — pagination, site-wide constants
-- `src/config/site.ts` — site metadata + nav links
+- `src/config/site.ts` — site metadata + nav links (Browse, Resources, Contact, About, News)
 - `src/app/globals.css` — CSS custom property definitions (light + dark tokens)
 - `tailwind.config.ts` — semantic color + font family extensions
-- `src/app/page.tsx` — homepage (Hero, Browse by Type, Featured, Newsletter)
-- `src/app/[typeSlug]/page.tsx` — SEO type pages (/scholarships, /fellowships, etc.)
-- `src/app/[typeSlug]/[regionSlug]/page.tsx` — SEO type+region pages (/scholarships/africa, etc.)
+- `src/app/page.tsx` — homepage
 - `src/app/opportunities/[slug]/page.tsx` — opportunity detail page
-- `src/app/about/page.tsx` — About page
-- `src/app/privacy/page.tsx` — Privacy Policy
-- `src/app/terms/page.tsx` — Terms of Service
-- `src/app/api/subscribe/route.ts` — newsletter signup endpoint (rate-limited, Kit v3)
-- `src/components/features/email-signup.tsx` — newsletter signup component (hero + footer variants)
+- `src/app/about/page.tsx` — About page (mission, impact stats, nonprofit info)
+- `src/app/contact/page.tsx` — Contact page (inquiries, error reports, nonprofit info)
+- `src/app/news/page.tsx` — News index page
+- `src/app/news/[slug]/page.tsx` — News detail page
+- `src/data/news-posts.ts` — Hardcoded news post data (shared between news pages)
+- `src/data/resources.ts` — Resource categories data
+- `src/app/api/subscribe/route.ts` — newsletter signup endpoint
+- `src/app/api/reminders/unsubscribe/route.ts` — deadline reminder unsubscribe
 - `src/components/layouts/header.tsx` — sticky header with mobile nav
-- `src/components/layouts/footer.tsx` — footer with Browse, About, and Newsletter columns
+- `src/components/layouts/footer.tsx` — footer with Browse, About, Work With Us, Support, Newsletter + EIN line
 
 ### Scrapers repo (../youthatlas-scrapers)
-- `src/distribution/telegram-distributor.ts` — post new opportunities to Telegram
-- `src/distribution/kit-client.ts` — Kit API (getSubscribers, sendBroadcast)
-- `src/distribution/email-formatter.ts` — weekly digest HTML email builder
-- `src/distribution/run-email-digest.ts` — CLI entry for weekly digest
-- `.github/workflows/ingest.yml` — daily scrape + ingest pipeline
-- `.github/workflows/distribute-telegram.yml` — triggered after ingest, posts to Telegram
-- `.github/workflows/weekly-digest.yml` — Monday 8AM UTC, sends Kit broadcast
+- `src/distribution/telegram-distributor.ts` — post new opportunities to Telegram (JS-side dedup, explicit columns)
+- `src/distribution/run-email-digest.ts` — CLI entry for weekly digest (explicit columns)
+- `src/distribution/kit-client.ts` — Kit API
+- `.github/workflows/ingest.yml` — daily scrape + ingest pipeline (parallel matrix)
+- `.github/workflows/distribute-telegram.yml` — triggered after ingest
+- `.github/workflows/weekly-digest.yml` — Monday 8AM UTC
+- `.github/workflows/deadline-reminders.yml` — daily 10AM UTC
 
 ## Import Order Convention
 
@@ -143,6 +125,7 @@ All 10 modules done, plus usability fixes:
 
 - Components: kebab-case (`opportunity-card.tsx`)
 - Services/config/types: kebab-case (`opportunity-service.ts`)
+- Data files: kebab-case in `src/data/` (`news-posts.ts`, `resources.ts`)
 
 ## Key Types
 
