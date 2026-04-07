@@ -81,6 +81,20 @@ export const advertiseSchema = z.object({
 /** auth/profile only checks auth — no body fields to validate */
 export const authProfileSchema = z.object({}).strict();
 
+export const digestPreferencesSchema = z.object({
+  digest_frequency: z.enum(['weekly', 'biweekly']).optional(),
+  digest_keywords: z
+    .array(z.string().min(1).max(30).trim())
+    .max(10, 'Maximum 10 keywords')
+    .optional(),
+  types_of_interest: z
+    .array(z.enum(OPPORTUNITY_TYPES as unknown as [OpportunityType, ...OpportunityType[]]))
+    .optional(),
+  regions_of_interest: z
+    .array(z.enum(REGIONS as unknown as [Region, ...Region[]]))
+    .optional(),
+});
+
 // ── Inferred types ────────────────────────────────────────────────────────────
 
 export type SubscribeInput = z.infer<typeof subscribeSchema>;
