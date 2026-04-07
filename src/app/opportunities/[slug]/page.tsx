@@ -7,6 +7,7 @@ import { OpportunityBadge } from '@/components/ui/badge';
 import { CopyButton } from '@/components/ui/copy-button';
 import { SaveButton } from '@/components/features/save-button';
 import { ShareButton } from '@/components/features/share-button';
+import { WhatsAppShareButton } from '@/components/features/whatsapp-share-button';
 import { OpportunityCard } from '@/components/features/opportunity-card';
 import { SaveButtonBulk } from '@/components/features/save-button-bulk';
 import { getOpportunityBySlug, getSimilarOpportunities } from '@/services/opportunity-service';
@@ -226,6 +227,7 @@ function ApplyCard({ opp }: ApplyCardProps) {
     <div className="sticky top-24 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
       <ApplyButton opp={opp} fullWidth />
       <ShareButton title={opp.title} slug={opp.slug} />
+      <WhatsAppShareButton title={opp.title} slug={opp.slug} />
       <div className="mt-3 flex items-center justify-center">
         <SaveButton opportunityId={opp.id} size="md" />
         <span className="ml-2 text-sm text-slate-500">Save for later</span>
@@ -250,6 +252,7 @@ function MobileApplyBar({ opp }: MobileApplyBarProps) {
     <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white p-4 lg:hidden">
       <div className="flex items-center gap-3">
         <ShareButton title={opp.title} slug={opp.slug} variant="compact" />
+        <WhatsAppShareButton title={opp.title} slug={opp.slug} variant="compact" />
         <div className="flex-1">
           <ApplyButton opp={opp} fullWidth />
         </div>
