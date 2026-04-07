@@ -18,6 +18,7 @@ User-facing Next.js app for browsing youth opportunities (scholarships, fellowsh
 - Phase 4: Launch Prep (security, rate limiting, legal pages)
 - Phase 5: Post-Launch Features (pgvector search, deadline reminders, OG images, featured listings, admin dashboard, GA4, Sentry)
 - Phase 6: Google Ad Grants Compliance (contact page, news page, EIN/nonprofit content, nav updates)
+- Phase 7: Personalization, PWA & Push Notifications (personalized digest, WhatsApp share, PWA manifest, service worker, Web Push end-to-end)
 
 ## Tech Stack
 
@@ -42,6 +43,8 @@ User-facing Next.js app for browsing youth opportunities (scholarships, fellowsh
 | `distribute-telegram.yml` | After ingest | Post new opportunities to Telegram |
 | `weekly-digest.yml` | Monday 8AM UTC | Send Kit broadcast email |
 | `deadline-reminders.yml` | Daily 10AM UTC | Email users with upcoming deadlines |
+| `personalized-digest.yml` | Monday 8AM UTC | Personalized email per user based on preferences |
+| `push-notifications.yml` | After Daily Ingest | Web Push to all `push_subscriptions` subscribers |
 | `type-check.yml` | On push/PR | TypeScript validation |
 
 ## Design System
@@ -73,6 +76,9 @@ User-facing Next.js app for browsing youth opportunities (scholarships, fellowsh
 - **featured_listings insert:** Do NOT chain `.select().single()` — causes RLS violation.
 - **Extraction model:** Google Gemini 2.5 Flash (NOT OpenAI, NOT Claude). OpenAI is embeddings only.
 - **'job' type removed.** Do not re-add anywhere. Scrapers auto-map job → internship.
+- **Service worker lives in `public/sw.js`** — plain JavaScript, NOT TypeScript. Must be at root of public dir.
+- **VAPID key env var:** `NEXT_PUBLIC_VAPID_PUBLIC_KEY` in Vercel. Never regenerate VAPID keys — existing browser subscriptions break.
+- **Push opt-in:** `push-dismissed` localStorage key prevents re-showing banner after dismiss.
 
 ## No-Touch Files (never modify without explicit instruction)
 
@@ -100,6 +106,13 @@ User-facing Next.js app for browsing youth opportunities (scholarships, fellowsh
 - `src/data/resources.ts` — Resource categories data
 - `src/app/api/subscribe/route.ts` — newsletter signup endpoint
 - `src/app/api/reminders/unsubscribe/route.ts` — deadline reminder unsubscribe
+- `src/app/api/push/vapid/route.ts` — GET VAPID public key
+- `src/app/api/push/subscribe/route.ts` — POST/DELETE push subscription management
+- `public/manifest.json` — PWA manifest (name, icons, display: standalone)
+- `public/sw.js` — service worker (cache strategy + push/notificationclick handlers)
+- `src/components/features/sw-register.tsx` — registers service worker in production
+- `src/components/features/push-opt-in.tsx` — floating opt-in banner, permission flow
+- `src/components/features/whatsapp-share-button.tsx` — WhatsApp share via wa.me URL
 - `src/components/layouts/header.tsx` — sticky header with mobile nav
 - `src/components/layouts/footer.tsx` — footer with Browse, About, Work With Us, Support, Newsletter + EIN line
 
