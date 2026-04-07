@@ -5,6 +5,7 @@ import Script from 'next/script';
 import { Header } from '@/components/layouts/header';
 import { Footer } from '@/components/layouts/footer';
 import { safeJsonLd } from '@/components/seo/json-ld';
+import { ServiceWorkerRegister } from '@/components/features/sw-register';
 
 import './globals.css';
 
@@ -24,6 +25,12 @@ export const metadata: Metadata = {
   title: 'YouthAtlas — Opportunities for Young People',
   description:
     'Find scholarships, fellowships, internships, grants, and more. Updated daily with AI-powered matching.',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'YouthAtlas',
+  },
 };
 
 export const viewport: Viewport = {
@@ -66,6 +73,7 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
         />
+        <link rel="apple-touch-icon" href="/icons/icon.svg" />
       </head>
       <body className="font-body min-h-screen flex flex-col bg-background text-text-primary">
         <Script
@@ -83,6 +91,7 @@ export default function RootLayout({
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );
