@@ -112,9 +112,25 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const hasPreferences =
     profile.regions_of_interest.length > 0 || profile.types_of_interest.length > 0;
 
+  const prefSet = typeof searchParams.pref_set === 'string' ? searchParams.pref_set : null;
+  const prefLabels: Record<string, string> = {
+    scholarship: 'Scholarships', fellowship: 'Fellowships', grant: 'Grants',
+    internship: 'Internships', conference: 'Conferences', competition: 'Competitions', training: 'Training',
+  };
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <h1 className="font-display text-2xl font-bold text-[#1A1A2E] sm:text-3xl">Dashboard</h1>
+
+      {/* ── Pref-set confirmation banner (from onboarding email click) ────── */}
+      {prefSet && prefLabels[prefSet] && (
+        <div className="mt-4 flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          <span className="text-base">✅</span>
+          <span>
+            <strong>{prefLabels[prefSet]}</strong> added to your interests — your weekly digest will now include matching opportunities.
+          </span>
+        </div>
+      )}
 
       {/* ── Recommended for You ──────────────────────────────────────────── */}
       <section className="mt-10">
