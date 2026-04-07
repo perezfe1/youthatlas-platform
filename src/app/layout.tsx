@@ -6,6 +6,7 @@ import { Header } from '@/components/layouts/header';
 import { Footer } from '@/components/layouts/footer';
 import { safeJsonLd } from '@/components/seo/json-ld';
 import { ServiceWorkerRegister } from '@/components/features/sw-register';
+import { PushOptIn } from '@/components/features/push-opt-in';
 
 import './globals.css';
 
@@ -92,6 +93,7 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
         <Footer />
         <ServiceWorkerRegister />
+        <PushOptIn />
       </body>
     </html>
   );

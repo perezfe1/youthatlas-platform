@@ -88,3 +88,58 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 });
+
+// ── Push notifications ──────────────────────────────────────────────────────
+
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+
+  let payload;
+  try {
+    payload = event.data.json();
+  } catch {
+    payload = {
+      title: 'YouthAtlas',
+      body: event.data.text(),
+      url: '/opportunities',
+    };
+  }
+
+  const { title, body, url, icon, badge } = payload;
+
+  event.waitUntil(
+    self.registration.showNotification(title || 'YouthAtlas', {
+      body: body || 'New opportunities available!',
+      icon: icon || '/icons/icon.svg',
+      badge: badge || '/icons/icon.svg',
+      data: { url: url || '/opportunities' },
+      actions: [
+        { action: 'view', title: 'View' },
+        { action: 'dismiss', title: 'Dismiss' },
+      ],
+    })
+  );
+});
+
+// Click on notification: open the linked page
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  if (event.action === 'dismiss') return;
+
+  const url = event.notification.data?.url || '/opportunities';
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      // Focus existing tab if one is open on our origin
+      for (const client of clients) {
+        if (new URL(client.url).origin === self.location.origin && 'focus' in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      // Otherwise open a new window
+      return self.clients.openWindow(url);
+    })
+  );
+});
