@@ -100,6 +100,24 @@ export const digestPreferencesSchema = z.object({
     .max(100)
     .nullable()
     .optional(),
+  display_name: z
+    .string()
+    .max(100, 'Display name must be 100 characters or fewer')
+    .trim()
+    .nullable()
+    .optional(),
+  date_of_birth: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format')
+    .nullable()
+    .optional(),
+  country_of_citizenship_2: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(100)
+    .nullable()
+    .optional(),
 });
 
 // ── Inferred types ────────────────────────────────────────────────────────────

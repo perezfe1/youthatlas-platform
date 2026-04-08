@@ -8,8 +8,7 @@ import { getSavedOpportunities, DASHBOARD_PAGE_SIZE } from '@/services/saved-ser
 import { getRecommendedOpportunities } from '@/services/opportunity-service';
 import { OpportunityCard } from '@/components/features/opportunity-card';
 import { SaveButtonBulk } from '@/components/features/save-button-bulk';
-import { ProfileForm } from '@/components/features/profile-form';
-import type { UserProfile } from '@/services/profile-service';
+import { ProfileMatchingForm, type ProfileMatchingData } from '@/components/features/profile-matching-form';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,14 +87,31 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     getSavedOpportunities(user.id, page),
   ]);
 
-  const profile: UserProfile = profileResult.data ?? {
+  const profile = profileResult.data ?? {
     id: user.id,
     email: user.email ?? '',
     display_name: null,
-    regions_of_interest: [],
-    types_of_interest: [],
+    regions_of_interest: [] as string[],
+    types_of_interest: [] as string[],
     created_at: '',
     updated_at: '',
+  };
+
+  const { data: prefData } = await supabase
+    .from('user_profiles')
+    .select('display_name, date_of_birth, country_of_citizenship, country_of_citizenship_2, digest_frequency, digest_keywords, types_of_interest, regions_of_interest')
+    .eq('id', user.id)
+    .single();
+
+  const profileMatchingData: ProfileMatchingData = {
+    display_name:           (prefData?.display_name as string)             ?? null,
+    date_of_birth:          (prefData?.date_of_birth as string)            ?? null,
+    country_of_citizenship: (prefData?.country_of_citizenship as string)   ?? null,
+    country_of_citizenship_2: (prefData?.country_of_citizenship_2 as string) ?? null,
+    types_of_interest:      (prefData?.types_of_interest as string[])      ?? [],
+    regions_of_interest:    (prefData?.regions_of_interest as string[])    ?? [],
+    digest_keywords:        (prefData?.digest_keywords as string[])        ?? [],
+    digest_frequency:       ((prefData?.digest_frequency as 'weekly' | 'biweekly') ?? 'weekly'),
   };
 
   const savedOpps = savedResult.data?.data ?? [];
@@ -122,12 +138,6 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl font-bold text-[#1A1A2E] sm:text-3xl">Dashboard</h1>
-        <Link
-          href="/dashboard/preferences"
-          className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:border-slate-300 hover:text-[#1A1A2E]"
-        >
-          ⚙️ Digest Preferences
-        </Link>
       </div>
 
       {/* ── Pref-set confirmation banner (from onboarding email click) ────── */}
@@ -214,13 +224,16 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         )}
       </section>
 
-      {/* ── Profile Settings ─────────────────────────────────────────────── */}
+      {/* ── Profile & Matching Settings ──────────────────────────────────── */}
       <section className="mt-14">
-        <h2 className="font-display text-xl font-semibold text-[#1A1A2E]">
-          Profile Settings
-        </h2>
-        <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6">
-          <ProfileForm profile={profile} />
+        <div className="flex items-baseline justify-between">
+          <h2 className="font-display text-xl font-semibold text-[#1A1A2E]">
+            Profile & Matching
+          </h2>
+          <span className="text-xs text-slate-400">Changes apply to your next digest</span>
+        </div>
+        <div className="mt-6">
+          <ProfileMatchingForm initial={profileMatchingData} />
         </div>
       </section>
     </div>

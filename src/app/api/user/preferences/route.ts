@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await supabase
       .from('user_profiles')
-      .select('types_of_interest, regions_of_interest, digest_frequency, digest_keywords, country_of_citizenship')
+      .select('types_of_interest, regions_of_interest, digest_frequency, digest_keywords, country_of_citizenship, country_of_citizenship_2, date_of_birth, display_name')
       .eq('id', user.id)
       .single();
 
