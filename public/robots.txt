@@ -2,6 +2,7 @@ User-agent: *
 Allow: /
 Disallow: /dashboard
 Disallow: /login
+Disallow: /admin
 Disallow: /api/
 
 # AI crawlers — allow public pages, block private routes
@@ -9,18 +10,21 @@ User-agent: GPTBot
 Allow: /
 Disallow: /dashboard
 Disallow: /login
+Disallow: /admin
 Disallow: /api/
 
 User-agent: ChatGPT-User
 Allow: /
 Disallow: /dashboard
 Disallow: /login
+Disallow: /admin
 Disallow: /api/
 
 User-agent: Google-Extended
 Allow: /
 Disallow: /dashboard
 Disallow: /login
+Disallow: /admin
 Disallow: /api/
 
 User-agent: CCBot
@@ -30,6 +34,7 @@ User-agent: anthropic-ai
 Allow: /
 Disallow: /dashboard
 Disallow: /login
+Disallow: /admin
 Disallow: /api/
 
 Sitemap: https://youthatlas.com/sitemap.xml

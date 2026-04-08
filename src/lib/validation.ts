@@ -109,6 +109,13 @@ export const digestPreferencesSchema = z.object({
   date_of_birth: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format')
+    .refine((val) => {
+      if (!val) return true;
+      const dob = new Date(val);
+      const minAge = new Date();
+      minAge.setFullYear(minAge.getFullYear() - 13);
+      return dob <= minAge;
+    }, 'You must be at least 13 years old to use this service')
     .nullable()
     .optional(),
   country_of_citizenship_2: z
