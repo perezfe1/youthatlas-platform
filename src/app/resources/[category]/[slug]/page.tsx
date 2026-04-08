@@ -13,8 +13,6 @@ import {
 import { getGuideContent } from '@/lib/mdx';
 import { FeedbackWidget } from '@/components/resources/feedback-widget';
 
-export const dynamic = 'force-dynamic';
-
 // ── Static params ──────────────────────────────────────────────────────────────
 
 export function generateStaticParams() {

@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 
 import { NEWS_POSTS } from '@/data/news-posts';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = false; // fully static — data from NEWS_POSTS constant
 
 // ── Metadata ─────────────────────────────────────────────────────────────────
 

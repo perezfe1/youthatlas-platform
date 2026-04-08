@@ -8,8 +8,6 @@ import {
   getGuidesByCategory,
 } from '@/data/resources';
 
-export const dynamic = 'force-dynamic';
-
 // ── Static params ──────────────────────────────────────────────────────────────
 
 export function generateStaticParams() {

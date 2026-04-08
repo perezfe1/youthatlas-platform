@@ -2,6 +2,7 @@
 
 import { useState, useRef, type KeyboardEvent } from 'react';
 import { REGIONS, OPPORTUNITY_TYPES } from '@/types/opportunity';
+import { COUNTRIES } from '@/data/countries';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -10,6 +11,7 @@ export type DigestPrefs = {
   digest_keywords: string[];
   types_of_interest: string[];
   regions_of_interest: string[];
+  country_of_citizenship: string | null;
 };
 
 type Props = { initial: DigestPrefs };
@@ -56,6 +58,7 @@ export function DigestPreferencesForm({ initial }: Props) {
   const [types, setTypes] = useState<string[]>(initial.types_of_interest);
   const [regions, setRegions] = useState<string[]>(initial.regions_of_interest);
   const [keywords, setKeywords] = useState<string[]>(initial.digest_keywords);
+  const [citizenship, setCitizenship] = useState<string>(initial.country_of_citizenship ?? '');
   const [keywordInput, setKeywordInput] = useState('');
   const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
@@ -102,6 +105,7 @@ export function DigestPreferencesForm({ initial }: Props) {
           digest_keywords: keywords,
           types_of_interest: types,
           regions_of_interest: regions,
+          country_of_citizenship: citizenship || null,
         }),
       });
 
@@ -202,6 +206,28 @@ export function DigestPreferencesForm({ initial }: Props) {
             );
           })}
         </div>
+      </SectionCard>
+
+      {/* ── Citizenship ───────────────────────────────────────────────────── */}
+      <SectionCard
+        title="Country of Citizenship"
+        hint="Helps us filter out opportunities you're not eligible for (e.g. scholarships restricted to specific nationalities)."
+      >
+        <select
+          value={citizenship}
+          onChange={(e) => setCitizenship(e.target.value)}
+          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#1A1A2E] focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        >
+          <option value="">— Not specified —</option>
+          {COUNTRIES.map((c) => (
+            <option key={c.value} value={c.value}>{c.label}</option>
+          ))}
+        </select>
+        {citizenship && (
+          <p className="mt-2 text-xs text-slate-500">
+            Opportunities explicitly restricted to other nationalities will be filtered from your digest.
+          </p>
+        )}
       </SectionCard>
 
       {/* ── Keywords ──────────────────────────────────────────────────────── */}

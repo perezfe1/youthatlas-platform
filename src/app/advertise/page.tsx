@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 import { AdvertiseForm } from '@/components/features/advertise-form';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = false; // fully static — no Supabase calls
 
 export const metadata: Metadata = {
   title: 'Feature Your Opportunity | YouthAtlas',

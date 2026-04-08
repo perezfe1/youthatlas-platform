@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 
 import { RESOURCE_CATEGORIES } from '@/data/resources';
 
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Resources | YouthAtlas',

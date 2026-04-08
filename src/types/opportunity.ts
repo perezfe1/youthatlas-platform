@@ -43,6 +43,7 @@ export interface Opportunity {
   fields: string[];
   regions: Region[];
   countries: string[];
+  eligible_nationalities: string[];
   target_audience: EducationLevel[];
   eligibility_text: string;
   deadline: string | null;

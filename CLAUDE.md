@@ -66,7 +66,7 @@ User-facing Next.js app for browsing youth opportunities (scholarships, fellowsh
 
 ## Gotchas — READ BEFORE CODING
 
-- **`force-dynamic` on all pages.** Every `page.tsx` must export `export const dynamic = 'force-dynamic'` — Supabase queries use cookies/headers which break static generation.
+- **`force-dynamic` only on auth-gated pages.** Pages that call `createServerSupabaseClient`, `getProfile`, or read cookies MUST use `force-dynamic` (dashboard, login, opportunities listing). Public pages with no auth use `revalidate = 3600` (ISR) or are fully static. Never use `force-dynamic` on purely public pages — it disables CDN caching and drives up Vercel compute costs.
 - **Never `select('*')` on opportunities table.** The `embedding` column is 6KB/row and `fts` is not selectable via PostgREST (42703 error). Always use explicit column lists.
 - **Telegram env var:** `TELEGRAM_CHANNEL_ID` (admin) ≠ `TELEGRAM_PUBLIC_CHANNEL_ID` (public). Using the wrong one silently fails.
 - **Kit API versions:** Use v3 (`api.convertkit.com/v3`) for broadcasts. Use v4 (`api.kit.com/v4`) for subscriber listing.

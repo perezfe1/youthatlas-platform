@@ -22,7 +22,7 @@ export default async function DigestPreferencesPage() {
   // Fetch current preferences
   const { data } = await supabase
     .from('user_profiles')
-    .select('types_of_interest, regions_of_interest, digest_frequency, digest_keywords')
+    .select('types_of_interest, regions_of_interest, digest_frequency, digest_keywords, country_of_citizenship')
     .eq('id', user.id)
     .single();
 
@@ -31,6 +31,7 @@ export default async function DigestPreferencesPage() {
     digest_keywords:  (data?.digest_keywords  as string[])              ?? [],
     types_of_interest:   (data?.types_of_interest   as string[])        ?? [],
     regions_of_interest: (data?.regions_of_interest as string[])        ?? [],
+    country_of_citizenship: (data?.country_of_citizenship as string) ?? null,
   };
 
   return (

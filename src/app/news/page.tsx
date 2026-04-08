@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 
 import { NEWS_POSTS } from '@/data/news-posts';
 
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'News & Updates | YouthAtlas',

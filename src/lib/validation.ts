@@ -93,6 +93,13 @@ export const digestPreferencesSchema = z.object({
   regions_of_interest: z
     .array(z.enum(REGIONS as unknown as [Region, ...Region[]]))
     .optional(),
+  country_of_citizenship: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(100)
+    .nullable()
+    .optional(),
 });
 
 // ── Inferred types ────────────────────────────────────────────────────────────
