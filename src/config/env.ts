@@ -17,7 +17,7 @@ const clientEnvSchema = z.object({
 const serverEnvSchema = clientEnvSchema.extend({
   SUPABASE_SERVICE_KEY: z.string().min(1),
   OPENAI_API_KEY: z.string().min(1),
-  ADMIN_PASSWORD: z.string().min(6),
+  ADMIN_PASSWORD: z.string().min(16),
 });
 
 export type ClientEnv = z.infer<typeof clientEnvSchema>;
