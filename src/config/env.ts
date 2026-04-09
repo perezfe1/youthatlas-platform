@@ -1,10 +1,17 @@
 import { z } from 'zod';
 
+// In production the Sentry DSN is required; in dev/test it is optional so
+// engineers can run locally without setting it up.
+const sentryDsnField =
+  process.env.NODE_ENV === 'production'
+    ? z.string().url('NEXT_PUBLIC_SENTRY_DSN must be a valid URL in production')
+    : z.string().url().optional();
+
 const clientEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
   NEXT_PUBLIC_GA_MEASUREMENT_ID: z.string().optional(),
-  NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
+  NEXT_PUBLIC_SENTRY_DSN: sentryDsnField,
 });
 
 const serverEnvSchema = clientEnvSchema.extend({
@@ -20,6 +27,7 @@ function validateClientEnv(): ClientEnv {
   const result = clientEnvSchema.safeParse({
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
   });
   if (!result.success) {
     const missing = result.error.issues
@@ -34,6 +42,7 @@ function validateServerEnv(): ServerEnv {
   const result = serverEnvSchema.safeParse({
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
     SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,

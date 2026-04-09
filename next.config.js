@@ -40,11 +40,11 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline'",
+              "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
-              "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://*.supabase.co https://api.convertkit.com https://api.kit.com",
+              "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com",
+              "connect-src 'self' https://*.supabase.co https://api.convertkit.com https://api.kit.com https://*.ingest.sentry.io https://www.google-analytics.com https://region1.google-analytics.com",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",
@@ -58,9 +58,15 @@ const nextConfig = {
 
 module.exports = withSentryConfig(nextConfig, {
   silent: true,
-  org: 'youthatlas',
-  project: 'javascript-nextjs',
+  org: 'prospera-hf',
+  project: 'youthatlas',
+  // Upload source maps to Sentry at build time for readable stack traces.
+  // Requires SENTRY_AUTH_TOKEN env var (set in Vercel + local .env).
+  authToken: process.env.SENTRY_AUTH_TOKEN,
   widenClientFileUpload: true,
   hideSourceMaps: true,
-  disableLogger: true,
+  // Tunnel Sentry requests through /monitoring to avoid ad blockers.
+  tunnelRoute: '/monitoring',
+  // Automatically instrument Next.js server-side features.
+  autoInstrumentServerFunctions: true,
 });

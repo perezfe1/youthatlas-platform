@@ -78,12 +78,31 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Missing or invalid endpoint' }, { status: 400 });
     }
 
+    // Resolve caller's session server-side.
+    const authClient = await createServerSupabaseClient();
+    const { data: { user } } = await authClient.auth.getUser();
+
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_KEY!,
     );
 
-    await supabase.from('push_subscriptions').delete().eq('endpoint', endpoint);
+    if (user) {
+      // Authenticated: only delete if this subscription belongs to them.
+      await supabase
+        .from('push_subscriptions')
+        .delete()
+        .eq('endpoint', endpoint)
+        .eq('user_id', user.id);
+    } else {
+      // Anonymous: only allow deleting subscriptions that have no user_id
+      // (i.e. the subscription was created while the user was not logged in).
+      await supabase
+        .from('push_subscriptions')
+        .delete()
+        .eq('endpoint', endpoint)
+        .is('user_id', null);
+    }
 
     return NextResponse.json({ ok: true });
   } catch {

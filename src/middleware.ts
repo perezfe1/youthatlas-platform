@@ -17,6 +17,16 @@ function checkApiRateLimit(ip: string): boolean {
   return true;
 }
 
+// ── EU/EEA country codes (GDPR applies) ──────────────────────────────────────
+const EU_COUNTRY_CODES = new Set([
+  // EU 27
+  'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DE', 'DK', 'EE', 'ES',
+  'FI', 'FR', 'GR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT',
+  'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK',
+  // EEA (GDPR equivalent)
+  'IS', 'LI', 'NO',
+]);
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -30,7 +40,22 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return await updateSession(request);
+  const response = await updateSession(request);
+
+  // ── Set EU flag cookie (readable by client JS, 24h TTL) ──────────────────
+  // Only set once — don't overwrite on every request if already present.
+  if (!request.cookies.has('x-is-eu')) {
+    const country = request.headers.get('x-vercel-ip-country') ?? '';
+    const isEu = EU_COUNTRY_CODES.has(country.toUpperCase());
+    response.cookies.set('x-is-eu', isEu ? '1' : '0', {
+      httpOnly: false,   // must be JS-readable for the client banner
+      sameSite: 'lax',
+      maxAge: 86_400,    // 24 hours — re-check daily (travellers, VPNs)
+      path: '/',
+    });
+  }
+
+  return response;
 }
 
 export const config = {
