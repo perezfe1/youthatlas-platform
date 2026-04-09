@@ -18,9 +18,9 @@ export interface PipelineRun {
   id: string;
   source_site: string;
   status: string;
-  found: number | null;
-  scraped: number | null;
-  stored: number | null;
+  listings_found: number | null;
+  listings_new: number | null;
+  listings_duplicate: number | null;
   started_at: string;
   completed_at: string | null;
   error_message: string | null;
@@ -122,7 +122,7 @@ export async function getRecentPipelineRuns(): Promise<Result<PipelineRun[]>> {
     const supabase = createAdminClient();
     const { data, error } = await supabase
       .from('scrape_runs')
-      .select('id, source_site, status, found, scraped, stored, started_at, completed_at, error_message')
+      .select('id, source_site, status, listings_found, listings_new, listings_duplicate, started_at, completed_at, error_message')
       .order('started_at', { ascending: false })
       .limit(10);
 

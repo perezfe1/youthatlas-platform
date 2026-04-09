@@ -242,9 +242,9 @@ export default async function AdminPage() {
                           <span className="text-slate-600 capitalize">{run.status}</span>
                         </span>
                       </td>
-                      <td className="px-3 py-2.5 text-slate-600">{run.found ?? '—'}</td>
-                      <td className="px-3 py-2.5 text-slate-600">{run.scraped ?? '—'}</td>
-                      <td className="px-3 py-2.5 text-slate-600">{run.stored ?? '—'}</td>
+                      <td className="px-3 py-2.5 text-slate-600">{run.listings_found ?? '—'}</td>
+                      <td className="px-3 py-2.5 text-slate-600">{run.listings_new ?? '—'}</td>
+                      <td className="px-3 py-2.5 text-slate-600">{run.listings_duplicate ?? '—'}</td>
                       <td className="px-3 py-2.5 text-slate-500">
                         {formatDuration(run.started_at, run.completed_at)}
                       </td>
