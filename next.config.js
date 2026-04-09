@@ -45,6 +45,7 @@ const nextConfig = {
               "img-src 'self' data: https:",
               "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com",
               "connect-src 'self' https://*.supabase.co https://api.convertkit.com https://api.kit.com https://*.ingest.sentry.io https://www.google-analytics.com https://region1.google-analytics.com",
+              "worker-src 'self' blob:",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",
