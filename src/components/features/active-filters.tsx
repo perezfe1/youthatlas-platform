@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 import type { OpportunityFilters } from '@/types/opportunity';
-import { toggleType, toggleRegion, toggleFunded } from '@/lib/filter-urls';
+import { toggleType, toggleRegion, toggleFunded, setDeadlineDays, setPostedDays } from '@/lib/filter-urls';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -33,8 +33,12 @@ export function ActiveFilters({ currentFilters }: Props) {
   const types = currentFilters.types ?? [];
   const regions = currentFilters.regions ?? [];
   const funded = !!currentFilters.is_fully_funded;
+  const deadlineDays = currentFilters.deadline_days;
+  const postedDays = currentFilters.posted_days;
 
-  if (types.length === 0 && regions.length === 0 && !funded) return null;
+  if (types.length === 0 && regions.length === 0 && !funded && !deadlineDays && !postedDays) {
+    return null;
+  }
 
   return (
     <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -57,6 +61,18 @@ export function ActiveFilters({ currentFilters }: Props) {
         <FilterPill
           href={toggleFunded(currentFilters)}
           label="Fully Funded"
+        />
+      )}
+      {deadlineDays && (
+        <FilterPill
+          href={setDeadlineDays(currentFilters, undefined)}
+          label={`Closing in ${deadlineDays}d`}
+        />
+      )}
+      {postedDays && (
+        <FilterPill
+          href={setPostedDays(currentFilters, undefined)}
+          label={postedDays === 1 ? 'Last 24h' : `Last ${postedDays}d`}
         />
       )}
     </div>

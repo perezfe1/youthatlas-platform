@@ -2,7 +2,14 @@ import Link from 'next/link';
 
 import { OPPORTUNITY_TYPES, REGIONS } from '@/types/opportunity';
 import type { OpportunityFilters, OpportunityType, Region } from '@/types/opportunity';
-import { toggleType, toggleRegion, toggleFunded, toggleExpired } from '@/lib/filter-urls';
+import {
+  toggleType,
+  toggleRegion,
+  toggleFunded,
+  toggleExpired,
+  setDeadlineDays,
+  setPostedDays,
+} from '@/lib/filter-urls';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -70,13 +77,60 @@ function CheckRow({ href, label, count, checked }: CheckRowProps) {
   );
 }
 
+type RadioRowProps = {
+  href: string;
+  label: string;
+  selected: boolean;
+};
+
+function RadioRow({ href, label, selected }: RadioRowProps) {
+  return (
+    <Link
+      href={href}
+      className={`flex items-center gap-2 rounded px-2 py-2 text-sm transition-colors hover:bg-slate-50 ${
+        selected ? 'font-semibold text-text-primary' : 'text-text-secondary'
+      }`}
+    >
+      <span
+        className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
+          selected ? 'border-primary' : 'border-slate-300'
+        }`}
+        aria-hidden="true"
+      >
+        {selected && <span className="h-2 w-2 rounded-full bg-primary" />}
+      </span>
+      {label}
+    </Link>
+  );
+}
+
+// ── Deadline options ──────────────────────────────────────────────────────────
+
+const DEADLINE_OPTIONS: { label: string; value: number | undefined }[] = [
+  { label: 'All', value: undefined },
+  { label: 'Closing in 7 days', value: 7 },
+  { label: 'Closing in 30 days', value: 30 },
+  { label: 'Closing in 90 days', value: 90 },
+];
+
+const POSTED_OPTIONS: { label: string; value: number | undefined }[] = [
+  { label: 'All', value: undefined },
+  { label: 'Last 24 hours', value: 1 },
+  { label: 'Last 7 days', value: 7 },
+  { label: 'Last 30 days', value: 30 },
+];
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function FilterSidebar({ currentFilters, typeCounts }: Props) {
   const activeTypes: OpportunityType[] = currentFilters.types ?? [];
   const activeRegions: Region[] = currentFilters.regions ?? [];
   const hasAnyFilter =
-    activeTypes.length > 0 || activeRegions.length > 0 || !!currentFilters.is_fully_funded;
+    activeTypes.length > 0 ||
+    activeRegions.length > 0 ||
+    !!currentFilters.is_fully_funded ||
+    !!currentFilters.deadline_days ||
+    !!currentFilters.posted_days;
 
   return (
     <div className="space-y-6">
@@ -131,9 +185,39 @@ export function FilterSidebar({ currentFilters, typeCounts }: Props) {
         </div>
       </div>
 
-      {/* Deadline */}
+      {/* Deadline proximity */}
       <div className="rounded-lg border border-slate-200 bg-white p-4">
         <SectionHeading>Deadline</SectionHeading>
+        <div className="space-y-0.5">
+          {DEADLINE_OPTIONS.map((opt) => (
+            <RadioRow
+              key={opt.label}
+              href={setDeadlineDays(currentFilters, opt.value)}
+              label={opt.label}
+              selected={currentFilters.deadline_days === opt.value}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Recently posted */}
+      <div className="rounded-lg border border-slate-200 bg-white p-4">
+        <SectionHeading>Posted</SectionHeading>
+        <div className="space-y-0.5">
+          {POSTED_OPTIONS.map((opt) => (
+            <RadioRow
+              key={opt.label}
+              href={setPostedDays(currentFilters, opt.value)}
+              label={opt.label}
+              selected={currentFilters.posted_days === opt.value}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Show Expired */}
+      <div className="rounded-lg border border-slate-200 bg-white p-4">
+        <SectionHeading>Other</SectionHeading>
         <CheckRow
           href={toggleExpired(currentFilters)}
           label="Show Expired"

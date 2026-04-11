@@ -44,6 +44,8 @@ export interface Opportunity {
   regions: Region[];
   countries: string[];
   eligible_nationalities: string[];
+  min_age: number | null;
+  max_age: number | null;
   target_audience: EducationLevel[];
   eligibility_text: string;
   deadline: string | null;
@@ -104,6 +106,8 @@ export interface OpportunityFilters {
   is_fully_funded?: boolean;
   show_expired?: boolean;        // when true, include past-deadline opportunities
   deadline_before?: string;
+  deadline_days?: number;        // show only opportunities closing within N days
+  posted_days?: number;          // show only opportunities created within the last N days
   search_query?: string;
   page?: number;
   page_size?: number;

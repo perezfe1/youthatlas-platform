@@ -25,6 +25,9 @@ export const OPPORTUNITY_COLUMNS = [
   'application_url',
   'source_url',
   'source_site',
+  'eligible_nationalities',
+  'min_age',
+  'max_age',
   'completeness_score',
   'status',
   'created_at',
@@ -78,6 +81,22 @@ export async function getOpportunities(
     if (filters?.education_level) q = q.contains('target_audience', [filters.education_level]);
     if (filters?.is_fully_funded) q = q.eq('is_fully_funded', true);
     if (filters?.deadline_before) q = q.lte('deadline', filters.deadline_before);
+
+    // Deadline proximity: only show opportunities closing within N days
+    if (filters?.deadline_days) {
+      const today = new Date().toISOString().split('T')[0]!;
+      const future = new Date(Date.now() + filters.deadline_days * 86_400_000)
+        .toISOString()
+        .split('T')[0]!;
+      q = q.gte('deadline', today).lte('deadline', future);
+    }
+
+    // Recently posted: only show opportunities created within the last N days
+    if (filters?.posted_days) {
+      const since = new Date(Date.now() - filters.posted_days * 86_400_000).toISOString();
+      q = q.gte('created_at', since);
+    }
+
     if (filters?.search_query) q = q.textSearch('fts', filters.search_query, { type: 'websearch' });
 
     const { data, error, count } = await q
@@ -125,6 +144,19 @@ async function getOpportunitiesIlikeFallback(filters: OpportunityFilters): Promi
     if (filters.education_level) q = q.contains('target_audience', [filters.education_level]);
     if (filters.is_fully_funded) q = q.eq('is_fully_funded', true);
     if (filters.deadline_before) q = q.lte('deadline', filters.deadline_before);
+
+    if (filters.deadline_days) {
+      const today = new Date().toISOString().split('T')[0]!;
+      const future = new Date(Date.now() + filters.deadline_days * 86_400_000)
+        .toISOString()
+        .split('T')[0]!;
+      q = q.gte('deadline', today).lte('deadline', future);
+    }
+
+    if (filters.posted_days) {
+      const since = new Date(Date.now() - filters.posted_days * 86_400_000).toISOString();
+      q = q.gte('created_at', since);
+    }
 
     const { data, error, count } = await q
       .order('deadline', { ascending: true, nullsFirst: false })
@@ -199,10 +231,9 @@ export async function getRecommendedOpportunities(
       .eq('status', 'active')
       .or(`deadline.is.null,deadline.gte.${today}`);
 
-    // Match EITHER a preferred type OR a preferred region
+    // Match BOTH a preferred type AND a preferred region (when both are set)
     if (types.length > 0 && regions.length > 0) {
-      const formatRegions = `{${regions.join(',')}}`;
-      q = q.or(`type.in.(${types.join(',')}),regions.ov.(${formatRegions})`);
+      q = q.in('type', types).overlaps('regions', regions);
     } else if (types.length > 0) {
       q = q.in('type', types);
     } else {

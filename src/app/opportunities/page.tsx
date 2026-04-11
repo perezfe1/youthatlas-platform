@@ -50,11 +50,22 @@ function parseSearchParams(
   const page =
     typeof sp.page === 'string' ? Math.max(1, parseInt(sp.page, 10) || 1) : 1;
 
+  const deadline_days =
+    typeof sp.deadline_days === 'string'
+      ? [7, 30, 90].includes(Number(sp.deadline_days)) ? Number(sp.deadline_days) : undefined
+      : undefined;
+  const posted_days =
+    typeof sp.posted_days === 'string'
+      ? [1, 7, 30].includes(Number(sp.posted_days)) ? Number(sp.posted_days) : undefined
+      : undefined;
+
   return {
     types: types.length > 0 ? types : undefined,
     regions: regions.length > 0 ? regions : undefined,
     is_fully_funded,
     show_expired,
+    deadline_days,
+    posted_days,
     search_query,
     page,
   };
@@ -154,17 +165,60 @@ export default async function OpportunitiesPage({ searchParams }: PageProps) {
   const page = filters.page ?? 1;
   const user = authResult.data?.user ?? null;
 
-  // Determine which opportunities match the user's profile preferences
+  // Determine which opportunities match the user's profile (score-based)
+  // +1 type match, +1 region match, +1 citizenship eligible, +1 age in range
+  // Threshold: score ≥ 2 to show "Matches you" badge
   const matchingIds = new Set<string>();
   if (user) {
     const profileResult = await getProfile(user.id);
     if (profileResult.data) {
-      const { types_of_interest, regions_of_interest } = profileResult.data;
-      if (types_of_interest.length > 0 || regions_of_interest.length > 0) {
+      const {
+        types_of_interest,
+        regions_of_interest,
+        country_of_citizenship,
+        country_of_citizenship_2,
+        date_of_birth,
+      } = profileResult.data;
+
+      const citizenships = [country_of_citizenship, country_of_citizenship_2].filter(Boolean) as string[];
+      const userAge = date_of_birth
+        ? Math.floor((Date.now() - new Date(date_of_birth).getTime()) / 31_557_600_000)
+        : null;
+
+      const hasPreferences =
+        types_of_interest.length > 0 || regions_of_interest.length > 0 ||
+        citizenships.length > 0 || userAge !== null;
+
+      if (hasPreferences) {
         for (const opp of opportunities) {
-          const typeMatch = types_of_interest.includes(opp.type);
-          const regionMatch = opp.regions.some((r) => regions_of_interest.includes(r));
-          if (typeMatch || regionMatch) matchingIds.add(opp.id);
+          let score = 0;
+
+          // +1 if type matches
+          if (types_of_interest.length > 0 && types_of_interest.includes(opp.type)) {
+            score++;
+          }
+
+          // +1 if any region matches
+          if (regions_of_interest.length > 0 && opp.regions.some((r) => regions_of_interest.includes(r))) {
+            score++;
+          }
+
+          // +1 if citizenship is eligible (or no restriction set)
+          if (citizenships.length > 0) {
+            const eligible = opp.eligible_nationalities ?? [];
+            if (eligible.length === 0 || eligible.some((n) => citizenships.includes(n))) {
+              score++;
+            }
+          }
+
+          // +1 if age is within range (or no range set)
+          if (userAge !== null) {
+            const minOk = opp.min_age == null || userAge >= opp.min_age;
+            const maxOk = opp.max_age == null || userAge <= opp.max_age;
+            if (minOk && maxOk) score++;
+          }
+
+          if (score >= 2) matchingIds.add(opp.id);
         }
       }
     }

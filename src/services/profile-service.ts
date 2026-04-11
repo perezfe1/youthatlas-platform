@@ -9,6 +9,9 @@ export type UserProfile = {
   display_name: string | null;
   regions_of_interest: string[];
   types_of_interest: string[];
+  country_of_citizenship: string | null;
+  country_of_citizenship_2: string | null;
+  date_of_birth: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -32,7 +35,7 @@ export async function getProfile(userId: string): Promise<Result<UserProfile>> {
     const supabase = await createServerSupabaseClient();
     const { data, error } = await supabase
       .from('user_profiles')
-      .select('id, email, display_name, regions_of_interest, types_of_interest, created_at, updated_at')
+      .select('id, email, display_name, regions_of_interest, types_of_interest, country_of_citizenship, country_of_citizenship_2, date_of_birth, created_at, updated_at')
       .eq('id', userId)
       .maybeSingle();
 
