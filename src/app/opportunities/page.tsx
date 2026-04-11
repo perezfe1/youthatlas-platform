@@ -165,9 +165,18 @@ export default async function OpportunitiesPage({ searchParams }: PageProps) {
   const page = filters.page ?? 1;
   const user = authResult.data?.user ?? null;
 
-  // Determine which opportunities match the user's profile (score-based)
-  // +1 type match, +1 region match, +1 citizenship eligible, +1 age in range
-  // Threshold: score ≥ 2 to show "Matches you" badge
+  // Determine which opportunities match the user's profile (score-based).
+  //
+  // Positive signals only — a point is awarded when there's evidence the
+  // opportunity is relevant, NOT when data is simply absent:
+  //   +1  type matches user's types_of_interest
+  //   +1  region matches user's regions_of_interest
+  //   +1  opportunity explicitly lists eligible nationalities AND user's citizenship qualifies
+  //   +1  opportunity explicitly sets an age range AND user's age falls within it
+  //  -1   opportunity restricts nationality AND user is NOT eligible  → disqualify
+  //  -1   opportunity restricts age AND user is outside range        → disqualify
+  //
+  // Threshold: score ≥ 2 to show "Matches you" badge.
   const matchingIds = new Set<string>();
   if (user) {
     const profileResult = await getProfile(user.id);
@@ -185,13 +194,12 @@ export default async function OpportunitiesPage({ searchParams }: PageProps) {
         ? Math.floor((Date.now() - new Date(date_of_birth).getTime()) / 31_557_600_000)
         : null;
 
-      const hasPreferences =
-        types_of_interest.length > 0 || regions_of_interest.length > 0 ||
-        citizenships.length > 0 || userAge !== null;
+      const hasPreferences = types_of_interest.length > 0 || regions_of_interest.length > 0;
 
       if (hasPreferences) {
         for (const opp of opportunities) {
           let score = 0;
+          let disqualified = false;
 
           // +1 if type matches
           if (types_of_interest.length > 0 && types_of_interest.includes(opp.type)) {
@@ -203,22 +211,35 @@ export default async function OpportunitiesPage({ searchParams }: PageProps) {
             score++;
           }
 
-          // +1 if citizenship is eligible (or no restriction set)
+          // Citizenship: only score when the opportunity explicitly lists nationalities
           if (citizenships.length > 0) {
             const eligible = opp.eligible_nationalities ?? [];
-            if (eligible.length === 0 || eligible.some((n) => citizenships.includes(n))) {
-              score++;
+            if (eligible.length > 0) {
+              if (eligible.some((n) => citizenships.includes(n))) {
+                score++;  // +1: user's citizenship is explicitly eligible
+              } else {
+                disqualified = true; // user is NOT eligible — hard reject
+              }
             }
+            // eligible.length === 0 → no restriction → neutral (0 points)
           }
 
-          // +1 if age is within range (or no range set)
+          // Age: only score when the opportunity explicitly sets min/max
           if (userAge !== null) {
-            const minOk = opp.min_age == null || userAge >= opp.min_age;
-            const maxOk = opp.max_age == null || userAge <= opp.max_age;
-            if (minOk && maxOk) score++;
+            const hasAgeRange = opp.min_age != null || opp.max_age != null;
+            if (hasAgeRange) {
+              const minOk = opp.min_age == null || userAge >= opp.min_age;
+              const maxOk = opp.max_age == null || userAge <= opp.max_age;
+              if (minOk && maxOk) {
+                score++;  // +1: user is within the explicit age range
+              } else {
+                disqualified = true; // user is outside the age range
+              }
+            }
+            // no age range set → neutral (0 points)
           }
 
-          if (score >= 2) matchingIds.add(opp.id);
+          if (!disqualified && score >= 2) matchingIds.add(opp.id);
         }
       }
     }
