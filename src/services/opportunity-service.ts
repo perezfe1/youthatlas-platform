@@ -67,8 +67,16 @@ export async function getOpportunities(
       .select(OPPORTUNITY_COLUMNS, { count: 'exact' })
       .eq('status', 'active');
 
-    // Hide expired by default — only show upcoming or rolling deadlines
-    if (!filters?.show_expired) {
+    // When deadline_days is set, it handles its own date range — skip the
+    // default "hide expired" clause so the two don't conflict.
+    if (filters?.deadline_days) {
+      const today = new Date().toISOString().split('T')[0]!;
+      const future = new Date(Date.now() + filters.deadline_days * 86_400_000)
+        .toISOString()
+        .split('T')[0]!;
+      q = q.not('deadline', 'is', null).gte('deadline', today).lte('deadline', future);
+    } else if (!filters?.show_expired) {
+      // Hide expired by default — only show upcoming or rolling deadlines
       const today = new Date().toISOString().split('T')[0]!;
       q = q.or(`deadline.is.null,deadline.gte.${today}`);
     }
@@ -81,15 +89,6 @@ export async function getOpportunities(
     if (filters?.education_level) q = q.contains('target_audience', [filters.education_level]);
     if (filters?.is_fully_funded) q = q.eq('is_fully_funded', true);
     if (filters?.deadline_before) q = q.lte('deadline', filters.deadline_before);
-
-    // Deadline proximity: only show opportunities closing within N days
-    if (filters?.deadline_days) {
-      const today = new Date().toISOString().split('T')[0]!;
-      const future = new Date(Date.now() + filters.deadline_days * 86_400_000)
-        .toISOString()
-        .split('T')[0]!;
-      q = q.gte('deadline', today).lte('deadline', future);
-    }
 
     // Recently posted: only show opportunities created within the last N days
     if (filters?.posted_days) {
@@ -130,8 +129,13 @@ async function getOpportunitiesIlikeFallback(filters: OpportunityFilters): Promi
       .eq('status', 'active')
       .ilike('title', `%${filters.search_query ?? ''}%`);
 
-    // Hide expired by default — only show upcoming or rolling deadlines
-    if (!filters.show_expired) {
+    if (filters.deadline_days) {
+      const today = new Date().toISOString().split('T')[0]!;
+      const future = new Date(Date.now() + filters.deadline_days * 86_400_000)
+        .toISOString()
+        .split('T')[0]!;
+      q = q.not('deadline', 'is', null).gte('deadline', today).lte('deadline', future);
+    } else if (!filters.show_expired) {
       const today = new Date().toISOString().split('T')[0]!;
       q = q.or(`deadline.is.null,deadline.gte.${today}`);
     }
@@ -144,14 +148,6 @@ async function getOpportunitiesIlikeFallback(filters: OpportunityFilters): Promi
     if (filters.education_level) q = q.contains('target_audience', [filters.education_level]);
     if (filters.is_fully_funded) q = q.eq('is_fully_funded', true);
     if (filters.deadline_before) q = q.lte('deadline', filters.deadline_before);
-
-    if (filters.deadline_days) {
-      const today = new Date().toISOString().split('T')[0]!;
-      const future = new Date(Date.now() + filters.deadline_days * 86_400_000)
-        .toISOString()
-        .split('T')[0]!;
-      q = q.gte('deadline', today).lte('deadline', future);
-    }
 
     if (filters.posted_days) {
       const since = new Date(Date.now() - filters.posted_days * 86_400_000).toISOString();
