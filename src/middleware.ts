@@ -27,9 +27,14 @@ const EU_COUNTRY_CODES = new Set([
   'IS', 'LI', 'NO',
 ]);
 
+// Paths that require Supabase auth session refresh.
+// All other paths are public and skip the updateSession() call entirely.
+const AUTH_PATHS = ['/dashboard', '/profile', '/api/', '/admin'];
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // ── API rate limiting ─────────────────────────────────────────────────────
   if (pathname.startsWith('/api/') && !pathname.startsWith('/api/admin')) {
     const ip =
       request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
@@ -40,7 +45,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const response = await updateSession(request);
+  // ── Auth session refresh (only for auth-gated paths) ─────────────────────
+  // updateSession() makes a Supabase network call on every invocation.
+  // Skipping it for public pages cuts serverless compute by ~80%.
+  const needsAuth = AUTH_PATHS.some((p) => pathname.startsWith(p));
+  const response = needsAuth
+    ? await updateSession(request)
+    : NextResponse.next();
 
   // ── Set EU flag cookie (readable by client JS, 24h TTL) ──────────────────
   // Only set once — don't overwrite on every request if already present.

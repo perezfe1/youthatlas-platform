@@ -1,14 +1,15 @@
 import Link from 'next/link';
 
 import { OpportunityCard } from '@/components/features/opportunity-card';
-import { SaveButtonBulk } from '@/components/features/save-button-bulk';
 import { EmailSignup } from '@/components/features/email-signup';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { getOpportunityCount, getFeaturedOpportunities, getOpportunityTypes, getRecommendedOpportunities } from '@/services/opportunity-service';
-import { getProfile } from '@/services/profile-service';
+import { ForYouClient } from '@/components/features/for-you-client';
+import { getOpportunityCount, getFeaturedOpportunities, getOpportunityTypes } from '@/services/opportunity-service';
 import type { Opportunity } from '@/types/opportunity';
 
-export const dynamic = 'force-dynamic';
+// ISR: rebuild at most once per hour. Personalization is handled client-side
+// via /api/recommendations so anonymous visitors (the vast majority) are
+// served this cached page from the CDN — zero serverless invocations.
+export const revalidate = 3600;
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -159,40 +160,6 @@ function FeaturedSection({ opportunities }: { opportunities: Opportunity[] }) {
   );
 }
 
-// ── Section: Opportunities for You ────────────────────────────────────────────
-
-function ForYouSection({ opportunities }: { opportunities: Opportunity[] }) {
-  return (
-    <section className="py-10 sm:py-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h2 className="font-display text-2xl font-semibold text-[#1A1A2E]">
-            Opportunities for You
-          </h2>
-          <p className="mt-2 text-text-secondary">
-            Based on your profile preferences
-          </p>
-        </div>
-        <SaveButtonBulk>
-          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {opportunities.map((opp) => (
-              <OpportunityCard key={opp.id} opportunity={opp} matchesProfile />
-            ))}
-          </div>
-        </SaveButtonBulk>
-        <div className="mt-10 text-center">
-          <Link
-            href="/opportunities"
-            className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary-dark"
-          >
-            Browse all opportunities →
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 // ── Section: Newsletter ───────────────────────────────────────────────────────
 
 function NewsletterSection() {
@@ -216,13 +183,10 @@ function NewsletterSection() {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function HomePage() {
-  const supabase = await createServerSupabaseClient();
-
-  const [countResult, typesResult, featuredResult, authResult] = await Promise.all([
+  const [countResult, typesResult, featuredResult] = await Promise.all([
     getOpportunityCount(),
     getOpportunityTypes(),
     getFeaturedOpportunities(6),
-    supabase.auth.getUser(),
   ]);
 
   const rawCount = countResult.data ?? 0;
@@ -231,31 +195,14 @@ export default async function HomePage() {
     : 'thousands of';
   const types = (typesResult.data ?? []).filter((t) => t.type !== 'job');
   const featured = featuredResult.data ?? [];
-  const user = authResult.data?.user ?? null;
-
-  // Personalized recommendations for logged-in users with preferences set
-  let forYouOpps: Opportunity[] = [];
-  if (user) {
-    const profileResult = await getProfile(user.id);
-    if (profileResult.data) {
-      const { regions_of_interest, types_of_interest } = profileResult.data;
-      if (regions_of_interest.length > 0 || types_of_interest.length > 0) {
-        const recResult = await getRecommendedOpportunities(
-          regions_of_interest,
-          types_of_interest,
-          [],
-          6,
-        );
-        forYouOpps = recResult.data ?? [];
-      }
-    }
-  }
 
   return (
     <>
       <HeroSection displayCount={displayCount} />
       <TypeGridSection types={types} />
-      {forYouOpps.length > 0 && <ForYouSection opportunities={forYouOpps} />}
+      {/* ForYouClient fetches /api/recommendations after mount — invisible to
+          anonymous visitors, no SSR auth call needed here */}
+      <ForYouClient />
       <FeaturedSection opportunities={featured} />
       <NewsletterSection />
     </>
