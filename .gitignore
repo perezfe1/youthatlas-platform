@@ -10,5 +10,6 @@ out
 next-env.d.ts
 .vercel
 .vscode/settings.json
+HANDOFF.md
 .git 2/
 src 2/
