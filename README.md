@@ -2,6 +2,10 @@
 
 The web front-end for **YouthAtlas** — an AI-powered platform that aggregates scholarships, fellowships, internships, grants, and other opportunities for young people.
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fperezfe1%2Fyouthatlas-platform)
+
+Thanks to [Vercel](https://vercel.com) for their support of open-source software.
+
 ## Tech Stack
 
 | Layer         | Technology                        |
