@@ -14,7 +14,7 @@ import {
 } from '@/config/seo';
 import { safeJsonLd } from '@/components/seo/json-ld';
 
-export const revalidate = 3600; // ISR: re-render at most once per hour
+export const revalidate = 86400; // ISR: re-render at most once per day
 // Paths not returned by generateStaticParams automatically get 404
 export const dynamicParams = false;
 

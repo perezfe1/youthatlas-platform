@@ -2,6 +2,13 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 import { updateSession } from '@/lib/supabase/middleware';
 
+// ── Bot blocking ─────────────────────────────────────────────────────────────
+// Block known aggressive crawlers that return zero user/SEO value.
+// This runs before any serverless function, preventing wasted compute.
+// Keep: Googlebot, Bingbot, facebookexternalhit, Twitterbot (legitimate value).
+const BAD_BOT_PATTERN =
+  /AhrefsBot|SemrushBot|DotBot|MJ12bot|DataForSeoBot|serpstatbot|BLEXBot|PetalBot|Bytespider|YandexBot|SeznamBot|BaiduSpider|360Spider|sogou/i;
+
 // ── API rate limiting (in-memory, resets on cold start) ───────────────────────
 const apiRateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
@@ -33,6 +40,14 @@ const AUTH_PATHS = ['/dashboard', '/profile', '/api/', '/admin'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // ── Bot blocking ──────────────────────────────────────────────────────────
+  // Check before anything expensive runs. Returns 403 for known bad bots so
+  // they don't burn serverless compute or trigger Supabase calls.
+  const ua = request.headers.get('user-agent') ?? '';
+  if (BAD_BOT_PATTERN.test(ua)) {
+    return new NextResponse('Forbidden', { status: 403 });
+  }
 
   // ── API rate limiting ─────────────────────────────────────────────────────
   if (pathname.startsWith('/api/') && !pathname.startsWith('/api/admin')) {

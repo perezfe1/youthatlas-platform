@@ -1,6 +1,11 @@
 import type { OpportunityFilters, OpportunityType, Region } from '@/types/opportunity';
 
-/** Build a /opportunities URL from filter state. Always resets page to 1. */
+/**
+ * Build a browse URL from filter state. Always resets page to 1.
+ *
+ * Any filter state routes to /opportunities/search (dynamic SSR).
+ * An empty filter state routes to /opportunities (ISR-cached default page).
+ */
 export function buildFilterUrl(f: OpportunityFilters): string {
   const p = new URLSearchParams();
   if (f.types?.length) p.set('type', f.types.join(','));
@@ -11,10 +16,14 @@ export function buildFilterUrl(f: OpportunityFilters): string {
   if (f.posted_days) p.set('posted_days', String(f.posted_days));
   if (f.search_query) p.set('search', f.search_query);
   const qs = p.toString();
-  return qs ? `/opportunities?${qs}` : '/opportunities';
+  // No filters → cached browse page; any filter → dynamic search page
+  return qs ? `/opportunities/search?${qs}` : '/opportunities';
 }
 
-/** Build a /opportunities URL preserving all filters at a specific page. */
+/**
+ * Build a browse URL preserving all filters at a specific page.
+ * Always routes to /opportunities/search (pagination is a dynamic operation).
+ */
 export function buildPageUrl(filters: OpportunityFilters, page: number): string {
   const p = new URLSearchParams();
   if (filters.types?.length) p.set('type', filters.types.join(','));
@@ -25,7 +34,7 @@ export function buildPageUrl(filters: OpportunityFilters, page: number): string 
   if (filters.posted_days) p.set('posted_days', String(filters.posted_days));
   if (filters.search_query) p.set('search', filters.search_query);
   p.set('page', String(page));
-  return `/opportunities?${p.toString()}`;
+  return `/opportunities/search?${p.toString()}`;
 }
 
 /** Toggle a type value in/out of the types array, reset to page 1. */

@@ -15,7 +15,7 @@ import { formatDate } from '@/lib/utils';
 import { safeJsonLd } from '@/components/seo/json-ld';
 import type { Opportunity, OpportunityType } from '@/types/opportunity';
 
-export const revalidate = 3600; // ISR: re-render at most once per hour
+export const revalidate = 86400; // ISR: re-render at most once per day
 
 // ── SEO ───────────────────────────────────────────────────────────────────────
 

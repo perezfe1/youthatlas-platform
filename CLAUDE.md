@@ -10,7 +10,7 @@ User-facing Next.js app for browsing youth opportunities (scholarships, fellowsh
 
 ## Project Status
 
-### All Phases Complete (as of April 7, 2026)
+### All Phases Complete (as of April 8, 2026)
 - Phase 0: Database & Infrastructure
 - Phase 1: Scraper Pipeline (5 scrapers, Gemini extraction)
 - Phase 2: Web Platform (services, pages, auth, search, SEO)
@@ -19,6 +19,7 @@ User-facing Next.js app for browsing youth opportunities (scholarships, fellowsh
 - Phase 5: Post-Launch Features (pgvector search, deadline reminders, OG images, featured listings, admin dashboard, GA4, Sentry)
 - Phase 6: Google Ad Grants Compliance (contact page, news page, EIN/nonprofit content, nav updates)
 - Phase 7: Personalization, PWA & Push Notifications (personalized digest, WhatsApp share, PWA manifest, service worker, Web Push end-to-end)
+- Phase 8: Cost Optimization, Profile Enrichment & Security Hardening (ISR caching, citizenship/age matching, unified profile UI, CSP hardening, admin auth hashing, push auth fix)
 
 ## Tech Stack
 
@@ -71,7 +72,7 @@ User-facing Next.js app for browsing youth opportunities (scholarships, fellowsh
 - **Telegram env var:** `TELEGRAM_CHANNEL_ID` (admin) ≠ `TELEGRAM_PUBLIC_CHANNEL_ID` (public). Using the wrong one silently fails.
 - **Kit API versions:** Use v3 (`api.convertkit.com/v3`) for broadcasts. Use v4 (`api.kit.com/v4`) for subscriber listing.
 - **Kit broadcast = draft.** `POST /v3/broadcasts` creates a draft only — must publish in Kit dashboard.
-- **`pnpm build` hangs locally.** Never run it. Use `force-dynamic` on all data pages.
+- **`pnpm build` hangs locally.** Never run it. Use `pnpm type-check` to verify.
 - **`vercel.json` does not support `rateLimit`.** Rate limiting is handled by Next.js middleware.
 - **featured_listings insert:** Do NOT chain `.select().single()` — causes RLS violation.
 - **Extraction model:** Google Gemini 2.5 Flash (NOT OpenAI, NOT Claude). OpenAI is embeddings only.
@@ -79,6 +80,11 @@ User-facing Next.js app for browsing youth opportunities (scholarships, fellowsh
 - **Service worker lives in `public/sw.js`** — plain JavaScript, NOT TypeScript. Must be at root of public dir.
 - **VAPID key env var:** `NEXT_PUBLIC_VAPID_PUBLIC_KEY` in Vercel. Never regenerate VAPID keys — existing browser subscriptions break.
 - **Push opt-in:** `push-dismissed` localStorage key prevents re-showing banner after dismiss.
+- **Admin cookie:** Stores `SHA-256('admin-session-v1:' + password)`, NOT the raw password. Both `route.ts` and `layout.tsx` use `deriveSessionToken()`.
+- **Push subscribe userId:** Always resolved server-side via `createServerSupabaseClient().auth.getUser()`. Never trust client-provided userId.
+- **Country values:** Lowercase underscore format (`south_africa`, `united_states`). Defined in `src/data/countries.ts`. Shared between platform (profile form) and scrapers (extraction + matching).
+- **DOB validation:** Min age 13 enforced in `digestPreferencesSchema`. Refine check uses current date comparison.
+- **Opportunity matching fields:** `eligible_nationalities text[]`, `min_age integer`, `max_age integer` on opportunities table. Extracted by Gemini with explicit rules not to infer nationality from location.
 
 ## No-Touch Files (never modify without explicit instruction)
 
@@ -113,6 +119,10 @@ User-facing Next.js app for browsing youth opportunities (scholarships, fellowsh
 - `src/components/features/sw-register.tsx` — registers service worker in production
 - `src/components/features/push-opt-in.tsx` — floating opt-in banner, permission flow
 - `src/components/features/whatsapp-share-button.tsx` — WhatsApp share via wa.me URL
+- `src/components/features/profile-matching-form.tsx` — unified profile + matching preferences form (citizenship, DOB, interests, digest)
+- `src/data/countries.ts` — 160 countries as `{ label, value }` for citizenship dropdowns
+- `src/lib/validation.ts` — Zod schemas for all API endpoints (subscribe, profile, advertise, digest preferences)
+- `src/lib/rate-limiter.ts` — sliding window rate limiter (authLimit, subscribeLimit)
 - `src/components/layouts/header.tsx` — sticky header with mobile nav
 - `src/components/layouts/footer.tsx` — footer with Browse, About, Work With Us, Support, Newsletter + EIN line
 
@@ -124,6 +134,8 @@ User-facing Next.js app for browsing youth opportunities (scholarships, fellowsh
 - `.github/workflows/distribute-telegram.yml` — triggered after ingest
 - `.github/workflows/weekly-digest.yml` — Monday 8AM UTC
 - `.github/workflows/deadline-reminders.yml` — daily 10AM UTC
+- `.github/workflows/personalized-digest.yml` — Monday 8AM UTC
+- `.github/workflows/push-notifications.yml` — after daily ingest
 
 ## Import Order Convention
 

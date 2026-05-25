@@ -45,7 +45,8 @@ export function SearchInput({
       params.delete('page');
 
       const qs = params.toString();
-      router.replace(qs ? `/opportunities?${qs}` : '/opportunities');
+      // Always route to the dynamic search page so the ISR browse page stays cacheable.
+      router.replace(qs ? `/opportunities/search?${qs}` : '/opportunities');
     }, SEARCH.DEBOUNCE_MS);
   }
 
