@@ -10,5 +10,8 @@ export async function GET() {
     );
   }
 
-  return NextResponse.json({ publicKey });
+  return NextResponse.json(
+    { publicKey },
+    { headers: { 'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800' } },
+  );
 }
