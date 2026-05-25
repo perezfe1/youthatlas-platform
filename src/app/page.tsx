@@ -48,6 +48,13 @@ function HeroSection({ displayCount }: { displayCount: string }) {
         <p className="mx-auto mt-4 max-w-2xl text-base text-text-secondary sm:text-xl">
           Scholarships, fellowships, grants, internships and more — aggregated from 50+ sources worldwide.
         </p>
+        <p className="mt-3 text-xs text-text-secondary">
+          A free service by{' '}
+          <a href="/about" className="underline underline-offset-2 hover:text-primary">
+            Prospera Development Foundation
+          </a>
+          , a registered 501(c)(3) nonprofit · EIN: 92-3630661
+        </p>
         <p className="mt-6 text-sm text-text-secondary">
           Browse {displayCount} opportunities updated daily. Get notified via{' '}
           <a
@@ -175,6 +182,17 @@ function NewsletterSection() {
         <div className="mt-6">
           <EmailSignup variant="hero" />
         </div>
+        <p className="mt-6 text-sm text-slate-500">
+          YouthAtlas is free, forever.{' '}
+          <a
+            href="https://www.zeffy.com/en-US/donation-form/help-young-people-find-life-changing-opportunities"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-primary underline underline-offset-2 hover:text-primary-dark"
+          >
+            Support our mission →
+          </a>
+        </p>
       </div>
     </section>
   );
