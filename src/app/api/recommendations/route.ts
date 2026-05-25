@@ -36,5 +36,8 @@ export async function GET() {
     6,
   );
 
-  return NextResponse.json({ opportunities: recResult.data ?? [] });
+  return NextResponse.json(
+    { opportunities: recResult.data ?? [] },
+    { headers: { 'Cache-Control': 'private, max-age=300' } },
+  );
 }

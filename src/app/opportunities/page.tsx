@@ -11,14 +11,15 @@ import { PAGINATION } from '@/config/constants';
 import { buildPageUrl } from '@/lib/filter-urls';
 import type { OpportunityFilters } from '@/types/opportunity';
 
-// ISR: rebuild at most once every 5 minutes.
+// ISR: rebuild at most once every 30 minutes.
 //
 // This page has NO searchParams and NO auth — it serves the default
 // opportunity grid (page 1, no filters, no personalization).
 // Bots and cold visitors land here and get a CDN-cached response.
+// Data changes once daily (4 AM scrape), so 30 min is plenty fresh.
 //
 // Any filtering or searching navigates to /opportunities/search (dynamic).
-export const revalidate = 300;
+export const revalidate = 1800;
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
