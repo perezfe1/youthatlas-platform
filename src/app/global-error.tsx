@@ -1,21 +1,13 @@
 'use client';
 
-import * as Sentry from '@sentry/nextjs';
-import { useEffect } from 'react';
-
-// This catches unhandled errors that bubble up through the entire App Router tree.
-// It must be a Client Component and must render its own <html>/<body>.
+// Catches unhandled errors that bubble up through the entire App Router tree.
+// Must be a Client Component and must render its own <html>/<body>.
 export default function GlobalError({
-  error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    Sentry.captureException(error);
-  }, [error]);
-
   return (
     <html lang="en">
       <body
@@ -35,7 +27,7 @@ export default function GlobalError({
             Something went wrong
           </h1>
           <p style={{ color: '#6B7280', fontSize: 15, margin: '0 0 24px' }}>
-            We&apos;ve been notified and are looking into it.
+            Please try again or refresh the page.
           </p>
           <button
             onClick={reset}

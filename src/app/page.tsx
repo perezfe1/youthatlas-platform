@@ -6,10 +6,11 @@ import { ForYouClient } from '@/components/features/for-you-client';
 import { getOpportunityCount, getFeaturedOpportunities, getOpportunityTypes } from '@/services/opportunity-service';
 import type { Opportunity } from '@/types/opportunity';
 
-// ISR: rebuild at most once per hour. Personalization is handled client-side
-// via /api/recommendations so anonymous visitors (the vast majority) are
-// served this cached page from the CDN — zero serverless invocations.
-export const revalidate = 3600;
+// ISR: rebuild at most once every 6 hours. Data changes once daily via the
+// 4 AM scrape; opportunity count only updates by ~20-30/day. Personalization
+// is handled client-side via /api/recommendations (auth-gated, see ForYouClient)
+// so anonymous visitors are served fully cached from the CDN.
+export const revalidate = 21600;
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 

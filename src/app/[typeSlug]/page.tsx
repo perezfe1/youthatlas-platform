@@ -8,7 +8,7 @@ import { SaveButtonBulk } from '@/components/features/save-button-bulk';
 import { TYPE_SLUG_MAP, getTypeSeoData } from '@/config/seo';
 import { safeJsonLd } from '@/components/seo/json-ld';
 
-export const revalidate = 86400; // ISR: re-render at most once per day
+export const revalidate = 604800; // ISR: re-render at most once per week
 
 const SEO_PAGE_SIZE = 12;
 

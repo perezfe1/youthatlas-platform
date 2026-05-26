@@ -4,9 +4,9 @@ import type { Metadata } from 'next';
 import { OpportunityCard } from '@/components/features/opportunity-card';
 import { getOpportunities } from '@/services/opportunity-service';
 
-// ISR: rebuild at most once per hour.
+// ISR: rebuild at most once every 6 hours.
 // Public page — no auth, no searchParams, safe to cache at CDN edge.
-export const revalidate = 3600;
+export const revalidate = 21600;
 
 // ── Metadata ──────────────────────────────────────────────────────────────────
 

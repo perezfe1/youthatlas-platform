@@ -1,5 +1,3 @@
-const { withSentryConfig } = require('@sentry/nextjs');
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -44,7 +42,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com",
-              "connect-src 'self' https://*.supabase.co https://api.convertkit.com https://api.kit.com https://*.ingest.sentry.io https://www.google-analytics.com https://region1.google-analytics.com",
+              "connect-src 'self' https://*.supabase.co https://api.convertkit.com https://api.kit.com https://www.google-analytics.com https://region1.google-analytics.com",
               "worker-src 'self' blob:",
               "frame-ancestors 'none'",
               "base-uri 'self'",
@@ -57,19 +55,4 @@ const nextConfig = {
   },
 };
 
-module.exports = withSentryConfig(nextConfig, {
-  silent: true,
-  org: 'prospera-hf',
-  project: 'youthatlas',
-  // Upload source maps to Sentry at build time for readable stack traces.
-  // Requires SENTRY_AUTH_TOKEN env var (set in Vercel + local .env).
-  authToken: process.env.SENTRY_AUTH_TOKEN,
-  widenClientFileUpload: true,
-  hideSourceMaps: true,
-  // Tunnel Sentry requests through /monitoring to avoid ad blockers.
-  tunnelRoute: '/monitoring',
-  // Disable auto-instrumentation — it wraps every server function with a
-  // Sentry tracer, generating observability events + tunnel invocations on
-  // every request. Errors still captured; just no automatic perf traces.
-  autoInstrumentServerFunctions: false,
-});
+module.exports = nextConfig;

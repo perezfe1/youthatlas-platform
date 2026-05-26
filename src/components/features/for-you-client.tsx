@@ -21,6 +21,17 @@ export function ForYouClient() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    // Skip API call for anonymous visitors (>90% of traffic).
+    // Supabase auth cookie has a 'sb-' prefix and ends in '-auth-token'.
+    const hasAuthCookie = document.cookie
+      .split('; ')
+      .some((c) => c.startsWith('sb-') && c.includes('-auth-token'));
+
+    if (!hasAuthCookie) {
+      setLoaded(true);
+      return;
+    }
+
     fetch('/api/recommendations')
       .then((r) => r.json())
       .then((data: { opportunities: Opportunity[] }) => {
