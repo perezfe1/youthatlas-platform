@@ -68,6 +68,8 @@ module.exports = withSentryConfig(nextConfig, {
   hideSourceMaps: true,
   // Tunnel Sentry requests through /monitoring to avoid ad blockers.
   tunnelRoute: '/monitoring',
-  // Automatically instrument Next.js server-side features.
-  autoInstrumentServerFunctions: true,
+  // Disable auto-instrumentation — it wraps every server function with a
+  // Sentry tracer, generating observability events + tunnel invocations on
+  // every request. Errors still captured; just no automatic perf traces.
+  autoInstrumentServerFunctions: false,
 });
