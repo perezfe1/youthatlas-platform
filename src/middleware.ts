@@ -3,23 +3,44 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
 
 // ── Bot blocking ─────────────────────────────────────────────────────────────
-// Block known aggressive crawlers that return zero user/SEO value.
-// This runs before any serverless function, preventing wasted compute.
-// Keep: Googlebot, Bingbot, facebookexternalhit, Twitterbot (legitimate value).
-const BAD_BOT_PATTERN =
-  /AhrefsBot|SemrushBot|DotBot|MJ12bot|DataForSeoBot|serpstatbot|BLEXBot|PetalBot|Bytespider|YandexBot|SeznamBot|BaiduSpider|360Spider|sogou/i;
+// Block aggressive crawlers + AI training scrapers. These consume serverless
+// compute and return zero user/SEO value. Whitelist legitimate search bots only.
+const BAD_BOT_PATTERN = new RegExp(
+  [
+    // AI training scrapers (HIGH PRIORITY - these can consume huge bandwidth)
+    'GPTBot', 'ChatGPT-User', 'OAI-SearchBot', 'ClaudeBot', 'anthropic-ai',
+    'Google-Extended', 'Applebot-Extended', 'CCBot', 'PerplexityBot',
+    'ImagesiftBot', 'omgili', 'Bytespider', 'YouBot', 'DuckAssistBot',
+    'Diffbot', 'FacebookBot', 'Meta-ExternalAgent', 'cohere-ai', 'cohere-training-data-crawler',
+    'Amazonbot', 'Applebot',
+    // Aggressive SEO/marketing crawlers (zero value, high cost)
+    'AhrefsBot', 'SemrushBot', 'DotBot', 'MJ12bot', 'DataForSeoBot',
+    'serpstatbot', 'BLEXBot', 'PetalBot', 'YandexBot', 'SeznamBot',
+    'BaiduSpider', '360Spider', 'sogou', 'Sogou', 'NetcraftSurveyAgent',
+    'SiteAuditBot', 'AwarioBot', 'BacklinksExtendedBot', 'BLEXBot',
+    'DnyzBot', 'magpie-crawler', 'panscient', 'Buck',
+    // Generic scrapers
+    'python-requests', 'Scrapy', 'curl/', 'wget/', 'Go-http-client',
+    'node-fetch', 'axios/', 'okhttp/', 'libwww-perl',
+    'HttpClient', 'Java/', 'Apache-HttpClient',
+  ].join('|'),
+  'i',
+);
 
-// ── API rate limiting (in-memory, resets on cold start) ───────────────────────
-const apiRateLimitMap = new Map<string, { count: number; resetAt: number }>();
+// ── Rate limiting (in-memory, resets on cold start) ───────────────────────────
+// Tighter limits since we're under bot pressure.
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const API_RATE_LIMIT = 10;        // requests per minute per IP (was 30)
+const PAGE_RATE_LIMIT = 60;       // requests per minute per IP for page views
 
-function checkApiRateLimit(ip: string): boolean {
+function checkRateLimit(ip: string, limit: number): boolean {
   const now = Date.now();
-  const entry = apiRateLimitMap.get(ip);
+  const entry = rateLimitMap.get(ip);
   if (!entry || now > entry.resetAt) {
-    apiRateLimitMap.set(ip, { count: 1, resetAt: now + 60_000 });
+    rateLimitMap.set(ip, { count: 1, resetAt: now + 60_000 });
     return true;
   }
-  if (entry.count >= 30) return false;
+  if (entry.count >= limit) return false;
   entry.count++;
   return true;
 }
@@ -35,48 +56,58 @@ const EU_COUNTRY_CODES = new Set([
 ]);
 
 // Paths that require Supabase auth session refresh.
-// All other paths are public and skip the updateSession() call entirely.
 const AUTH_PATHS = ['/dashboard', '/profile', '/api/', '/admin'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const ua = request.headers.get('user-agent') ?? '';
 
   // ── Bot blocking ──────────────────────────────────────────────────────────
-  // Check before anything expensive runs. Returns 403 for known bad bots so
-  // they don't burn serverless compute or trigger Supabase calls.
-  const ua = request.headers.get('user-agent') ?? '';
+  // Block known bad bots and AI scrapers before anything expensive runs.
   if (BAD_BOT_PATTERN.test(ua)) {
     return new NextResponse('Forbidden', { status: 403 });
   }
 
-  // ── API rate limiting ─────────────────────────────────────────────────────
+  // Block empty user agents (likely scripts/scrapers)
+  if (!ua || ua.length < 10) {
+    return new NextResponse('Forbidden', { status: 403 });
+  }
+
+  // ── Get client IP for rate limiting ───────────────────────────────────────
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    request.ip ??
+    'unknown';
+
+  // ── API rate limiting (tight: 10/min) ─────────────────────────────────────
   if (pathname.startsWith('/api/') && !pathname.startsWith('/api/admin')) {
-    const ip =
-      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-      request.ip ??
-      'unknown';
-    if (!checkApiRateLimit(ip)) {
+    if (!checkRateLimit(`api:${ip}`, API_RATE_LIMIT)) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
   }
 
+  // ── Page rate limiting (60/min) — catches scrapers hitting many URLs ──────
+  // Skip static assets via matcher config below.
+  if (!pathname.startsWith('/api/') && !pathname.startsWith('/_next/')) {
+    if (!checkRateLimit(`page:${ip}`, PAGE_RATE_LIMIT)) {
+      return new NextResponse('Too many requests', { status: 429 });
+    }
+  }
+
   // ── Auth session refresh (only for auth-gated paths) ─────────────────────
-  // updateSession() makes a Supabase network call on every invocation.
-  // Skipping it for public pages cuts serverless compute by ~80%.
   const needsAuth = AUTH_PATHS.some((p) => pathname.startsWith(p));
   const response = needsAuth
     ? await updateSession(request)
     : NextResponse.next();
 
   // ── Set EU flag cookie (readable by client JS, 24h TTL) ──────────────────
-  // Only set once — don't overwrite on every request if already present.
   if (!request.cookies.has('x-is-eu')) {
     const country = request.headers.get('x-vercel-ip-country') ?? '';
     const isEu = EU_COUNTRY_CODES.has(country.toUpperCase());
     response.cookies.set('x-is-eu', isEu ? '1' : '0', {
-      httpOnly: false,   // must be JS-readable for the client banner
+      httpOnly: false,
       sameSite: 'lax',
-      maxAge: 86_400,    // 24 hours — re-check daily (travellers, VPNs)
+      maxAge: 86_400,
       path: '/',
     });
   }
