@@ -99,7 +99,14 @@ export default async function OgImage({
           </div>
         </div>
       ),
-      { ...size },
+      {
+        ...size,
+        headers: {
+          // Cache OG images aggressively: 30 days at CDN edge, 1 day in browsers.
+          // OG images are keyed by slug; opportunity title/deadline rarely change.
+          'Cache-Control': 'public, max-age=86400, s-maxage=2592000, immutable',
+        },
+      },
     );
   }
 
@@ -198,6 +205,11 @@ export default async function OgImage({
         </div>
       </div>
     ),
-    { ...size },
+    {
+      ...size,
+      headers: {
+        'Cache-Control': 'public, max-age=86400, s-maxage=2592000, immutable',
+      },
+    },
   );
 }
