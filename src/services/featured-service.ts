@@ -1,3 +1,4 @@
+import { getPublicSupabaseClient } from '@/lib/supabase/public';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import type { FeaturedListing, FeaturedSubmission } from '@/types/featured';
 import type { AppError, Result } from '@/types/opportunity';
@@ -29,7 +30,8 @@ function toFeaturedListing(row: Record<string, unknown>): FeaturedListing {
 
 export async function getActiveFeaturedListings(): Promise<Result<FeaturedListing[]>> {
   try {
-    const supabase = await createServerSupabaseClient();
+    // Public read rendered on ISR pages — must stay cookie-free (see public.ts).
+    const supabase = getPublicSupabaseClient();
     const now = new Date().toISOString();
 
     const { data, error } = await supabase

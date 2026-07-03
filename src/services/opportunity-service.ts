@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { getPublicSupabaseClient } from '@/lib/supabase/public';
 import { PAGINATION } from '@/config/constants';
 import type { Opportunity, OpportunityFilters, AppError, Result } from '@/types/opportunity';
 
@@ -56,7 +56,7 @@ export async function getOpportunities(
   filters?: OpportunityFilters,
 ): Promise<OpportunitiesResult> {
   try {
-    const supabase = await createServerSupabaseClient();
+    const supabase = getPublicSupabaseClient();
     const page = filters?.page ?? 1;
     const pageSize = filters?.page_size ?? PAGINATION.DEFAULT_PAGE_SIZE;
     const [from, to] = toRange(page, pageSize);
@@ -117,7 +117,7 @@ export async function getOpportunities(
 /** FTS fallback when the fts column is unavailable — uses ilike on title. */
 async function getOpportunitiesIlikeFallback(filters: OpportunityFilters): Promise<OpportunitiesResult> {
   try {
-    const supabase = await createServerSupabaseClient();
+    const supabase = getPublicSupabaseClient();
     const page = filters.page ?? 1;
     const pageSize = filters.page_size ?? PAGINATION.DEFAULT_PAGE_SIZE;
     const [from, to] = toRange(page, pageSize);
@@ -168,7 +168,7 @@ async function getOpportunitiesIlikeFallback(filters: OpportunityFilters): Promi
 
 export async function getOpportunityBySlug(slug: string): Promise<Result<Opportunity>> {
   try {
-    const supabase = await createServerSupabaseClient();
+    const supabase = getPublicSupabaseClient();
     const { data, error } = await supabase
       .from('opportunities')
       .select(OPPORTUNITY_COLUMNS)
@@ -187,7 +187,7 @@ export async function getOpportunityBySlug(slug: string): Promise<Result<Opportu
 
 export async function getFeaturedOpportunities(limit = 6): Promise<Result<Opportunity[]>> {
   try {
-    const supabase = await createServerSupabaseClient();
+    const supabase = getPublicSupabaseClient();
     const today = new Date().toISOString().split('T')[0]!;
 
     const { data, error } = await supabase
@@ -217,7 +217,7 @@ export async function getRecommendedOpportunities(
   }
 
   try {
-    const supabase = await createServerSupabaseClient();
+    const supabase = getPublicSupabaseClient();
     const today = new Date().toISOString().split('T')[0]!;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -266,7 +266,7 @@ export async function getSimilarOpportunities(
   limit = 4,
 ): Promise<Result<Opportunity[]>> {
   try {
-    const supabase = await createServerSupabaseClient();
+    const supabase = getPublicSupabaseClient();
 
     // Step 1: Fetch this opportunity's embedding vector
     const { data: row, error: fetchErr } = await supabase
@@ -329,7 +329,7 @@ export async function getSimilarOpportunities(
 
 export async function getOpportunityCount(): Promise<Result<number>> {
   try {
-    const supabase = await createServerSupabaseClient();
+    const supabase = getPublicSupabaseClient();
     const { count, error } = await supabase
       .from('opportunities')
       .select('id', { count: 'exact', head: true })
@@ -344,7 +344,7 @@ export async function getOpportunityCount(): Promise<Result<number>> {
 
 export async function getOpportunityTypes(): Promise<Result<TypeCount[]>> {
   try {
-    const supabase = await createServerSupabaseClient();
+    const supabase = getPublicSupabaseClient();
     const { data, error } = await supabase
       .from('opportunities')
       .select('type')
