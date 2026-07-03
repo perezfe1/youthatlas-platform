@@ -10,16 +10,37 @@ User-facing Next.js app for browsing youth opportunities (scholarships, fellowsh
 
 ## Project Status
 
+See [ESTADO.md](../ESTADO.md) (project root) for current priorities, open
+threads, and verified last-activity dates. This section is architecture
+history only.
+
 ### All Phases Complete (as of April 8, 2026)
 - Phase 0: Database & Infrastructure
 - Phase 1: Scraper Pipeline (5 scrapers, Gemini extraction)
 - Phase 2: Web Platform (services, pages, auth, search, SEO)
 - Phase 3: Distribution (Telegram, email digest, Kit)
 - Phase 4: Launch Prep (security, rate limiting, legal pages)
-- Phase 5: Post-Launch Features (pgvector search, deadline reminders, OG images, featured listings, admin dashboard, GA4, Sentry)
+- Phase 5: Post-Launch Features (pgvector search, deadline reminders, OG images, featured listings, admin dashboard, GA4, Sentry — **Sentry was fully removed in Phase 9, see below**)
 - Phase 6: Google Ad Grants Compliance (contact page, news page, EIN/nonprofit content, nav updates)
 - Phase 7: Personalization, PWA & Push Notifications (personalized digest, WhatsApp share, PWA manifest, service worker, Web Push end-to-end)
 - Phase 8: Cost Optimization, Profile Enrichment & Security Hardening (ISR caching, citizenship/age matching, unified profile UI, CSP hardening, admin auth hashing, push auth fix)
+
+### Phase 9: Emergency Cost Cuts + Bot Defense + Ad Grants Fixes (May 25–27, 2026)
+Triggered by a GitGuardian alert (VAPID key exposed in `HANDOFF.md`) and a
+Vercel fair-use suspension. Both repos went **public** May 25, 2026.
+- VAPID keys rotated, git history purged (`git filter-repo`)
+- Sentry removed entirely — was the top cost driver (Session Replay +
+  `autoInstrumentServerFunctions` generated ~2M+ observability events/day)
+- `src/middleware.ts` rewritten: ~45-pattern bot/AI-scraper blocklist,
+  split rate limits (API 10/min, pages 60/min) — response to an 8x traffic
+  spike from AI training scrapers
+- `robots.txt` rewritten to disallow all major AI training crawlers
+- ISR windows extended across public pages (see Gotchas below)
+- `/dreamers-and-makers` curated opportunities page added
+- Ad Grants compliance: 2 new news posts, EIN/nonprofit line + donate CTA
+  on homepage
+- Result: Vercel usage dropped ~99% after bot blocking; cost stabilized at
+  ~$20/month (Pro plan base, negligible usage on top)
 
 ## Tech Stack
 
@@ -67,7 +88,15 @@ User-facing Next.js app for browsing youth opportunities (scholarships, fellowsh
 
 ## Gotchas — READ BEFORE CODING
 
-- **`force-dynamic` only on auth-gated pages.** Pages that call `createServerSupabaseClient`, `getProfile`, or read cookies MUST use `force-dynamic` (dashboard, login, opportunities listing). Public pages with no auth use `revalidate = 3600` (ISR) or are fully static. Never use `force-dynamic` on purely public pages — it disables CDN caching and drives up Vercel compute costs.
+- **This repo is PUBLIC (since May 25, 2026).** Never commit secrets, `.env`
+  files, or real key values — not even in comments or examples. `HANDOFF.md`
+  is gitignored for this reason.
+- **`force-dynamic` only on auth-gated pages.** Pages that call `createServerSupabaseClient`, `getProfile`, or read cookies MUST use `force-dynamic` (dashboard, login, opportunities listing). Public pages with no auth use ISR or are fully static. Never use `force-dynamic` on purely public pages — it disables CDN caching and drives up Vercel compute costs. Current ISR windows (extended May 2026 for cost reasons — don't shorten without checking Vercel usage first): homepage + `/dreamers-and-makers` = 6h, `/opportunities` listing = 4h, opportunity detail + SEO type/region pages = 7d.
+- **Bot/scraper defense is layered — primary layer is Vercel WAF, NOT this repo.** As of July 3, 2026, two custom firewall rules ("Block Bad Bots 1 - AI + Scripted (edge)", "Block Bad Bots 2 - SEO + Scripted (edge)", 25 user-agent patterns each) deny bad bots at the edge — free, and denied requests consume zero usage quota (critical on Hobby-plan limits). This config lives in Vercel (dashboard → Firewall, or `vercel firewall overview`), not in git. The `src/middleware.ts` ~45-pattern regex blocklist is now the *backstop* layer (still needed: empty-UA blocking, rate limits API 10/min/IP, pages 60/min/IP). Managed rules Bot Protection (challenge) + AI Bots (deny) also active. Don't remove any layer without replacing. Hobby plan allows max 3 custom WAF rules — one slot deliberately kept free for incidents.
+- **Sentry was fully removed** (May 2026, cost-driven). Don't re-add
+  `@sentry/nextjs`, `instrumentation.ts`, or `instrumentation-client.ts`
+  without checking current Vercel Observability Events cost first — Session
+  Replay alone generated millions of events/day.
 - **Never `select('*')` on opportunities table.** The `embedding` column is 6KB/row and `fts` is not selectable via PostgREST (42703 error). Always use explicit column lists.
 - **Telegram env var:** `TELEGRAM_CHANNEL_ID` (admin) ≠ `TELEGRAM_PUBLIC_CHANNEL_ID` (public). Using the wrong one silently fails.
 - **Kit API versions:** Use v3 (`api.convertkit.com/v3`) for broadcasts. Use v4 (`api.kit.com/v4`) for subscriber listing.
@@ -78,7 +107,7 @@ User-facing Next.js app for browsing youth opportunities (scholarships, fellowsh
 - **Extraction model:** Google Gemini 2.5 Flash (NOT OpenAI, NOT Claude). OpenAI is embeddings only.
 - **'job' type removed.** Do not re-add anywhere. Scrapers auto-map job → internship.
 - **Service worker lives in `public/sw.js`** — plain JavaScript, NOT TypeScript. Must be at root of public dir.
-- **VAPID key env var:** `NEXT_PUBLIC_VAPID_PUBLIC_KEY` in Vercel. Never regenerate VAPID keys — existing browser subscriptions break.
+- **VAPID key env var:** `NEXT_PUBLIC_VAPID_PUBLIC_KEY` in Vercel. Never regenerate VAPID keys — existing browser subscriptions break. Keys were rotated once (May 25, 2026) after exposure in `HANDOFF.md`; current keys are correct as deployed — do not touch again.
 - **Push opt-in:** `push-dismissed` localStorage key prevents re-showing banner after dismiss.
 - **Admin cookie:** Stores `SHA-256('admin-session-v1:' + password)`, NOT the raw password. Both `route.ts` and `layout.tsx` use `deriveSessionToken()`.
 - **Push subscribe userId:** Always resolved server-side via `createServerSupabaseClient().auth.getUser()`. Never trust client-provided userId.
@@ -108,6 +137,9 @@ User-facing Next.js app for browsing youth opportunities (scholarships, fellowsh
 - `src/app/contact/page.tsx` — Contact page (inquiries, error reports, nonprofit info)
 - `src/app/news/page.tsx` — News index page
 - `src/app/news/[slug]/page.tsx` — News detail page
+- `src/app/dreamers-and-makers/page.tsx` — Curated opportunities page (fellowships/scholarships/conferences/training, LatAm + global), ISR 6h
+- `src/middleware.ts` — Bot/AI-scraper blocklist + rate limiting + EU cookie flag + auth session refresh gate
+- `src/components/features/cookie-consent.tsx` — GDPR/EEA cookie consent banner, mounted in `layout.tsx`
 - `src/data/news-posts.ts` — Hardcoded news post data (shared between news pages)
 - `src/data/resources.ts` — Resource categories data
 - `src/app/api/subscribe/route.ts` — newsletter signup endpoint
