@@ -51,7 +51,7 @@ export default function ContactPage() {
           href="/advertise"
           className="inline-block rounded-lg border-2 border-blue-500 px-6 py-3 font-semibold text-blue-500 transition-colors hover:bg-blue-50"
         >
-          Learn More
+          Learn more about featuring your opportunity
         </Link>
       </div>
 
