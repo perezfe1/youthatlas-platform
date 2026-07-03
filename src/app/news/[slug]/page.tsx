@@ -18,6 +18,32 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   };
 }
 
+// ── Body rendering ────────────────────────────────────────────────────────────
+// Post bodies use a minimal markdown subset: a paragraph fully wrapped in
+// `**…**` is a subheading; inline `**…**` spans are bold.
+
+function renderParagraph(paragraph: string, i: number) {
+  // A bold-only first line (`**Heading**` alone or followed by body text on
+  // the next line) renders as a subheading.
+  const heading = paragraph.match(/^\*\*(.+)\*\*(?:\n([\s\S]+))?$/);
+  if (heading && !heading[1].includes('**')) {
+    return (
+      <div key={i}>
+        <h2 className="font-display pt-2 text-xl font-semibold text-[#1A1A2E]">
+          {heading[1]}
+        </h2>
+        {heading[2] ? <p className="mt-2">{heading[2]}</p> : null}
+      </div>
+    );
+  }
+  const parts = paragraph.split(/\*\*(.+?)\*\*/g);
+  return (
+    <p key={i}>
+      {parts.map((part, j) => (j % 2 === 1 ? <strong key={j}>{part}</strong> : part))}
+    </p>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function NewsPostPage({ params }: { params: { slug: string } }) {
@@ -37,9 +63,7 @@ export default function NewsPostPage({ params }: { params: { slug: string } }) {
       <p className="mt-2 text-sm text-slate-500">{post.date}</p>
 
       <div className="mt-8 space-y-4 text-slate-600 leading-relaxed">
-        {post.body.split('\n\n').map((paragraph, i) => (
-          <p key={i}>{paragraph}</p>
-        ))}
+        {post.body.split('\n\n').map(renderParagraph)}
       </div>
     </div>
   );

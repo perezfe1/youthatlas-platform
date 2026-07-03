@@ -1,5 +1,31 @@
 export const NEWS_POSTS = [
   {
+    slug: 'fall-2026-deadlines-july-august',
+    title: "Don't Wait for September: Fall 2026 Deadlines Are Closing This Summer",
+    date: 'July 3, 2026',
+    excerpt:
+      'The biggest fall fellowships and scholarships close in July and August. Here are the real deadlines on our radar right now — several fully funded.',
+    body: `A pattern we see every year: applicants start thinking about "fall opportunities" in September — after the strongest programs have already closed. The application window for fall 2026 cohorts is open right now, and it's dense. Here's what's actually closing in the next few weeks, pulled directly from the 3,000+ live listings on YouthAtlas.
+
+**Closing July 15 — this window is nearly shut**
+
+The Konrad-Adenauer-Stiftung International Scholarship (Germany, fully funded) closes July 15. So does the ARUA Early-Career Research Fellowship — six-month funded research placements across African universities — and University Mohammed VI Polytechnic's cohort of 200+ fully funded PhD positions for 2026–2027. On the competition side, the Science & SciLifeLab Prize for Young Scientists and Conservation Nation's grant program for early-career conservationists (up to US$5,000, open worldwide) share the same deadline.
+
+If any of these fit you, the honest advice is: a July 15 deadline means your recommenders needed to be asked yesterday. Ask them today anyway — many will come through in a week if you make it easy for them.
+
+**Early August — the fellowship cluster**
+
+August 1–4 is one of the year's densest fellowship windows. Harvard's Rowland Fellowship 2027 (fully funded, for experimental scientists worldwide) closes August 1, alongside Singapore's A*STAR ACIS Scholarships and the New York Climate Exchange's Climate Tech Fellowship. The One Young World "AI for Good" Scholarship (fully funded) closes August 2, and Harvard's Society of Fellows — one of the most prestigious postdoctoral programs anywhere — closes August 4.
+
+**How to use the next two weeks well**
+
+Start from the deadline filter, not the search bar. Go to youthatlas.com/opportunities, sort by deadline, and work through what's closing soonest. Use the "fully funded" filter deliberately if finances are the barrier — every listing marked fully funded covers costs based on the program's own description.
+
+Then work backwards from each deadline: recommendation letters need two weeks of lead time, transcripts need one, and a strong personal statement needs at least three drafts. A deadline four weeks out means starting this week.
+
+Every listing above — and about 800 more currently open — is free to browse at youthatlas.com. No account required, no paywall, ever. YouthAtlas is a project of Prospera Development Foundation, a registered 501(c)(3) nonprofit, and equitable access to opportunity is the whole point.`,
+  },
+  {
     slug: 'youthatlas-open-source-2026',
     title: 'YouthAtlas Is Now Open Source',
     date: 'May 25, 2026',
