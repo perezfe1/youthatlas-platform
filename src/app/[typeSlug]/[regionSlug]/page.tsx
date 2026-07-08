@@ -13,8 +13,13 @@ import {
   getComboSeoData,
 } from '@/config/seo';
 import { safeJsonLd } from '@/components/seo/json-ld';
+import { buildPageUrl } from '@/lib/filter-urls';
 
-export const revalidate = 604800; // ISR: re-render at most once per week
+// ISR: re-render at most once per week. This page must NOT read
+// searchParams (a dynamic API) — doing so silently opts it out of static
+// serving and every crawler hit burns Fluid CPU. Page 1 renders here;
+// pagination hands off to /opportunities/search (dynamic by design).
+export const revalidate = 604800;
 // Paths not returned by generateStaticParams automatically get 404
 export const dynamicParams = false;
 
@@ -41,7 +46,6 @@ export function generateStaticParams() {
 
 type Props = {
   params: { typeSlug: string; regionSlug: string };
-  searchParams: Record<string, string | string[] | undefined>;
 };
 
 // ── Metadata ──────────────────────────────────────────────────────────────────
@@ -54,65 +58,35 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: seo.metaTitle,
     description: seo.metaDescription,
     openGraph: { title: seo.metaTitle, description: seo.metaDescription },
+    // Old ?page=N URLs now serve this same static page — consolidate them.
+    alternates: { canonical: `https://youthatlas.com/${params.typeSlug}/${params.regionSlug}` },
   };
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function parsePage(sp: Record<string, string | string[] | undefined>): number {
-  return typeof sp.page === 'string' ? Math.max(1, parseInt(sp.page, 10) || 1) : 1;
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function Pagination({
-  basePath,
-  page,
-  totalCount,
-}: {
-  basePath: string;
-  page: number;
-  totalCount: number;
-}) {
+function Pagination({ nextUrl, totalCount }: { nextUrl: string; totalCount: number }) {
   const totalPages = Math.ceil(totalCount / SEO_PAGE_SIZE);
   if (totalPages <= 1) return null;
 
   return (
     <div className="mt-12 flex items-center justify-center gap-4">
-      {page > 1 ? (
-        <Link
-          href={`${basePath}?page=${page - 1}`}
-          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-[#1A1A2E] transition-colors hover:bg-slate-50"
-        >
-          ← Previous
-        </Link>
-      ) : (
-        <span className="rounded-lg border border-slate-100 px-4 py-2 text-sm font-medium text-slate-300">
-          ← Previous
-        </span>
-      )}
       <span className="text-sm text-text-secondary">
-        Page {page} of {totalPages}
+        Page 1 of {totalPages}
       </span>
-      {page < totalPages ? (
-        <Link
-          href={`${basePath}?page=${page + 1}`}
-          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-[#1A1A2E] transition-colors hover:bg-slate-50"
-        >
-          Next →
-        </Link>
-      ) : (
-        <span className="rounded-lg border border-slate-100 px-4 py-2 text-sm font-medium text-slate-300">
-          Next →
-        </span>
-      )}
+      <Link
+        href={nextUrl}
+        className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-[#1A1A2E] transition-colors hover:bg-slate-50"
+      >
+        Next →
+      </Link>
     </div>
   );
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default async function TypeRegionPage({ params, searchParams }: Props) {
+export default async function TypeRegionPage({ params }: Props) {
   const { typeSlug, regionSlug } = params;
 
   // Validate type slug
@@ -128,12 +102,11 @@ export default async function TypeRegionPage({ params, searchParams }: Props) {
   if (!seo) notFound();
 
   const typeSeo = getTypeSeoData(typeSlug)!;
-  const page = parsePage(searchParams);
 
   const result = await getOpportunities(
     isFullyFunded
-      ? { type: typeValue, is_fully_funded: true, page, page_size: SEO_PAGE_SIZE }
-      : { type: typeValue, region: regionValue, page, page_size: SEO_PAGE_SIZE },
+      ? { type: typeValue, is_fully_funded: true, page: 1, page_size: SEO_PAGE_SIZE }
+      : { type: typeValue, region: regionValue, page: 1, page_size: SEO_PAGE_SIZE },
   );
   const opportunities = result.data?.opportunities ?? [];
   const totalCount = result.data?.count ?? 0;
@@ -197,8 +170,12 @@ export default async function TypeRegionPage({ params, searchParams }: Props) {
             </div>
           </SaveButtonBulk>
           <Pagination
-            basePath={`/${typeSlug}/${regionSlug}`}
-            page={page}
+            nextUrl={buildPageUrl(
+              isFullyFunded
+                ? { types: [typeValue], is_fully_funded: true }
+                : { types: [typeValue], regions: regionValue ? [regionValue] : undefined },
+              2,
+            )}
             totalCount={totalCount}
           />
         </>
