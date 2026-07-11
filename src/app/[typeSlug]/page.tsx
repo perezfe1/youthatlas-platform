@@ -8,6 +8,7 @@ import { SaveButtonBulk } from '@/components/features/save-button-bulk';
 import { TYPE_SLUG_MAP, getTypeSeoData } from '@/config/seo';
 import { safeJsonLd } from '@/components/seo/json-ld';
 import { buildPageUrl } from '@/lib/filter-urls';
+import { PAGINATION } from '@/config/constants';
 
 // ISR: re-render at most once per week. This page must NOT read
 // searchParams (a dynamic API) — doing so silently opts it out of static
@@ -15,7 +16,10 @@ import { buildPageUrl } from '@/lib/filter-urls';
 // pagination hands off to /opportunities/search (dynamic by design).
 export const revalidate = 604800;
 
-const SEO_PAGE_SIZE = 12;
+// MUST match the search route's page size — "Next →" hands off to
+// /opportunities/search, which paginates at PAGINATION.DEFAULT_PAGE_SIZE.
+// If these diverge, page 2 skips rows (or is empty). Do not hardcode.
+const SEO_PAGE_SIZE = PAGINATION.DEFAULT_PAGE_SIZE;
 
 // ── Static params ─────────────────────────────────────────────────────────────
 

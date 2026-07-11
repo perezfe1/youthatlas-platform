@@ -14,6 +14,7 @@ import {
 } from '@/config/seo';
 import { safeJsonLd } from '@/components/seo/json-ld';
 import { buildPageUrl } from '@/lib/filter-urls';
+import { PAGINATION } from '@/config/constants';
 
 // ISR: re-render at most once per week. This page must NOT read
 // searchParams (a dynamic API) — doing so silently opts it out of static
@@ -23,7 +24,8 @@ export const revalidate = 604800;
 // Paths not returned by generateStaticParams automatically get 404
 export const dynamicParams = false;
 
-const SEO_PAGE_SIZE = 12;
+// MUST match the search route's page size (see [typeSlug]/page.tsx note).
+const SEO_PAGE_SIZE = PAGINATION.DEFAULT_PAGE_SIZE;
 
 // ── Static params ─────────────────────────────────────────────────────────────
 
